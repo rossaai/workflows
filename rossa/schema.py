@@ -125,6 +125,19 @@ class QualityPerformance(BasePerformance):
 
 
 # FIELDS
+class FieldType(Enum):
+    TEXT = "text"
+    TEXTAREA = "textarea"
+    NUMBER = "number"
+    INTEGER = "integer"
+    CHECKBOX = "checkbox"
+    SELECT = "select"
+    PROMPT = "prompt"
+    NEGATIVE_PROMPT = "negative_prompt"
+    PERFORMANCE = "performance"
+    CONTROLS = "controls"
+
+
 def TextField(
     title: str,
     description: str,
@@ -132,10 +145,10 @@ def TextField(
     **kwargs,
 ):
     return PydanticField(
+        type=FieldType.TEXT.value,
         title=title,
         description=description,
         placeholder=placeholder,
-        type="text",
         **kwargs,
     )
 
@@ -147,10 +160,10 @@ def TextAreaField(
     **kwargs,
 ):
     return PydanticField(
+        type=FieldType.TEXTAREA.value,
         title=title,
         description=description,
         placeholder=placeholder,
-        type="textarea",
         **kwargs,
     )
 
@@ -165,10 +178,10 @@ def NumberField(
     **kwargs,
 ):
     return PydanticField(
+        type=FieldType.NUMBER.value,
         title=title,
         description=description,
         placeholder=placeholder,
-        type="number",
         ge=min,
         le=max,
         step=step,
@@ -186,10 +199,10 @@ def IntegerField(
     **kwargs,
 ):
     return PydanticField(
+        type=FieldType.INTEGER.value,
         title=title,
         description=description,
         placeholder=placeholder,
-        type="integer",
         ge=min,
         le=max,
         step=step,
@@ -204,10 +217,10 @@ def CheckboxField(
     **kwargs,
 ):
     return PydanticField(
+        type=FieldType.CHECKBOX.value,
         title=title,
         description=description,
         placeholder=placeholder,
-        type="checkbox",
         default=False,
         **kwargs,
     )
@@ -221,10 +234,10 @@ def SelectField(
     **kwargs,
 ):
     return PydanticField(
+        type=FieldType.SELECT.value,
         title=title,
         description=description,
         placeholder=placeholder,
-        type="select",
         options=options,
         default=[],
         **kwargs,
@@ -239,6 +252,7 @@ def PromptField(
     **kwargs,
 ):
     return PydanticField(
+        type=FieldType.PROMPT.value,
         alias="prompt",
         title=title,
         description=description,
@@ -256,6 +270,7 @@ def NegativePromptField(
     **kwargs,
 ):
     return PydanticField(
+        type=FieldType.NEGATIVE_PROMPT.value,
         alias="negative_prompt",
         title=title,
         description=description,
@@ -273,6 +288,7 @@ def PerformanceField(
     **kwargs,
 ):
     return PydanticField(
+        type=FieldType.PERFORMANCE.value,
         alias="performance",
         default=[],
         title=title,
@@ -289,23 +305,11 @@ def ControlsField(
     **kwargs,
 ):
     return PydanticField(
+        type=FieldType.CONTROLS.value,
         alias="controls",
         default=[],
         title=title,
         description=description,
         options=options,
-        **kwargs,
-    )
-
-
-def ModelField(
-    title: str = "Model",
-    description: str = "Model settings.",
-    **kwargs,
-):
-    return PydanticField(
-        title=title,
-        description=description,
-        default=None,
         **kwargs,
     )
