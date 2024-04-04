@@ -693,9 +693,9 @@ class _Image:
             f"FROM {tag}",
             *add_python_commands,
             *setup_commands,
-            # "COPY /modal_requirements.txt /modal_requirements.txt",
+            "COPY /modal_requirements.txt /modal_requirements.txt",
             "RUN python -m pip install --upgrade pip",
-            # "RUN python -m pip install -r /modal_requirements.txt",
+            "RUN python -m pip install -r /modal_requirements.txt",
             # TODO: We should add this next line at some point to clean up the image, but it would
             # trigger a hash change, so batch it with the next rebuild-triggering change.
             #
@@ -933,6 +933,9 @@ class _Image:
                 if "FROM base" in command:
                     continue
                 if "/modal_requirements.txt" in command:
+                    continue
+                if "pip install -r /modal_requirements.txt" in command:
+                    docker_file += f"RUN python -m pip install git+https://github.com/rossaai/workflows \n"
                     continue
                 docker_file += command + "\n"
             docker_file += "\n"
