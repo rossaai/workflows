@@ -33,7 +33,6 @@ image = (
     .run_commands(
         "pip install trimesh omegaconf einops rembg huggingface_hub transformers"
     )
-    .pip_install("requests", "opencv-python-headless", "Pillow")
 )
 
 
@@ -50,24 +49,6 @@ with image.imports():
         resize_foreground,
         to_gradio_3d_orientation,
     )
-
-    import base64
-    from io import BytesIO
-    from PIL import Image
-    import requests
-
-    def convert_url_to_pil_image(url: str):
-        if not isinstance(url, str):
-            return None
-
-        if url.startswith("data:image"):
-            base64_str_index = url.find("base64,") + len("base64,")
-            image_data = base64.b64decode(url[base64_str_index:])
-            image = Image.open(BytesIO(image_data))
-        else:
-            response = requests.get(url)
-            image = Image.open(BytesIO(response.content))
-        return image
 
     def preprocess_image(
         input_image: PILImage,
@@ -96,7 +77,8 @@ with image.imports():
 class Workflow(
     BaseWorkflow,
     image=image,
-    title=("Image-to-3D"),
+    title="Image-to-3D",
+    version="TripoSR",
 ):
     """Creates a 3D model from provided image."""
 
@@ -144,9 +126,9 @@ class Workflow(
         foreground_ratio: float = 0.85,
         format: str = "glb",
     ):
-        image_url = controls[0].url
+        input_image = controls[0]
 
-        image = convert_url_to_pil_image(image_url)
+        image = input_image.to_pil_image()
 
         image = preprocess_image(
             image, remove_background, foreground_ratio, self.rembg_session
@@ -163,13 +145,3 @@ class Workflow(
 
         # save mesh to file with same format
         return Response(content=mesh_glb, media_type="application/octet-stream")
-
-
-print(
-    Workflow().to_modal(
-        stub_name="triposr_image_to_threed",
-        stub_args="""gpu=modal.gpu.A10G(),
-    allow_concurrent_inputs=4,
-    container_idle_timeout=240""",
-    )
-)

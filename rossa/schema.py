@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field as PydanticField
 from typing import List, Optional, Union
 from enum import Enum
+from .utils import url_to_pil_image, url_to_cv2_image
 
 
 class Option(BaseModel):
@@ -34,6 +35,12 @@ class ControlValue(BaseModel):
     type: Union[ControlType, str]
     influence: float
     url: str
+
+    def to_pil_image(self):
+        return url_to_pil_image(self.url)
+
+    def to_cv2_image(self):
+        return url_to_cv2_image(self.url)
 
 
 class BaseControl(Option):

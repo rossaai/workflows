@@ -3,13 +3,21 @@ from abc import abstractmethod
 from pydantic import BaseModel, validate_arguments
 import inspect
 from fastapi import Response
+from pydantic.schema import default_ref_template
 
 
 class BaseWorkflow(BaseModel):
-    def __init_subclass__(cls, image: Image, **kwargs):
+    def __init_subclass__(cls, image: Image, version: str, **kwargs):
+        cls.version = version
         cls.image = image
         super().__init_subclass__(**kwargs)
         cls.run = validate_arguments(cls.run)
+
+    def schema(self, by_alias: bool = True, ref_template: str = default_ref_template):
+        return {
+            **super().schema(by_alias=by_alias, ref_template=ref_template),
+            "version": self.version,
+        }
 
     @property
     def image(self) -> Image:
