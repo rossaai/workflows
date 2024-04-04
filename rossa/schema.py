@@ -257,7 +257,6 @@ def PromptField(
         title=title,
         description=description,
         placeholder=placeholder,
-        type="textarea",
         default="",
         **kwargs,
     )
@@ -275,7 +274,6 @@ def NegativePromptField(
         title=title,
         description=description,
         placeholder=placeholder,
-        type="textarea",
         default="",
         **kwargs,
     )
