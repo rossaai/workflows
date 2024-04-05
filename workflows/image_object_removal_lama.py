@@ -48,17 +48,11 @@ class Workflow(BaseWorkflow):
         )
 
         if mask is None or image is None:
-            raise Exception("Mask and image are required")
+            raise Exception("Control mask and image are required.")
 
         mask = mask.to_pil_image()
 
         image = image.to_pil_image()
-
-        if mask is None:
-            raise Exception("Mask is required. Error converting mask to Image")
-
-        if image is None:
-            raise Exception("Image is required. Error converting image to Image")
 
         result = self.simple_lama(image, mask)
 

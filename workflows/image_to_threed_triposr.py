@@ -137,9 +137,6 @@ class Workflow(BaseWorkflow):
 
         image = input_image.to_pil_image()
 
-        if image is None:
-            raise Exception("Error converting input image to Image")
-
         image = preprocess_image(
             image, remove_background, foreground_ratio, self.rembg_session
         )

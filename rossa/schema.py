@@ -37,11 +37,22 @@ class ControlValue(BaseModel):
     url: str
 
     def to_pil_image(self):
-        return url_to_pil_image(self.url)
+        """Converts a URL to a PIL image."""
+        img = url_to_pil_image(self.url)
+
+        if img is None:
+            raise Exception("Invalid image URL. Please provide a valid image URL.")
+
+        return img
 
     def to_cv2_image(self):
         """Converts a URL to a cv2 image. Remember to install cv2 and numpy."""
-        return url_to_cv2_image(self.url)
+        img = url_to_cv2_image(self.url)
+
+        if img is None:
+            raise Exception("Invalid image URL. Please provide a valid image URL.")
+
+        return img
 
 
 class BaseControl(Option):
