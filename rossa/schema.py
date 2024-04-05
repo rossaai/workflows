@@ -45,6 +45,7 @@ class ControlValue(BaseModel):
 
 class BaseControl(Option):
     value: Union[ControlType, str]
+    required: bool = False
 
 
 class InputControl(BaseControl):
@@ -54,11 +55,23 @@ class InputControl(BaseControl):
     tooltip: str = "Use text, images, or videos to guide generation."
 
 
+class InputImageControl(InputControl):
+    title: str = "Input Image"
+    description: str = "Input image for generation."
+    tooltip: str = "Use images to guide generation."
+
+
 class MaskControl(BaseControl):
     value: ControlType = ControlType.MASK
     title: str = "Mask"
     description: str = "Mask for generation."
     tooltip: str = "Use masks to guide generation."
+
+
+class MaskImageControl(MaskControl):
+    title: str = "Mask Image"
+    description: str = "Mask image for generation."
+    tooltip: str = "Use images as masks to guide generation."
 
 
 class CannyControl(BaseControl):

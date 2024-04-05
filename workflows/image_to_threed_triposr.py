@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import Response
-from rossa import Image, BaseWorkflow, ControlsField, ControlValue, InputControl
+from rossa import Image, BaseWorkflow, ControlsField, ControlValue, InputImageControl
 
 # Adapted from: https://github.com/camenduru/TripoSR-replicate/blob/main/cog.yaml
 image = (
@@ -74,13 +74,12 @@ with image.imports():
         return image
 
 
-class Workflow(
-    BaseWorkflow,
-    image=image,
-    title="Image-to-3D",
-    version="TripoSR",
-):
-    """Creates a 3D model from provided image."""
+class Workflow(BaseWorkflow):
+    image = image
+    title = "Image-to-3D"
+    version = "TripoSR"
+    description = "Creates a 3D model from provided image."
+    tooltip = "Creates a 3D model using the input image as reference."
 
     def download(self):
         TSR.from_pretrained(
@@ -120,15 +119,26 @@ class Workflow(
 
     def run(
         self,
-        controls: List[ControlValue] = ControlsField(options=[InputControl()]),
+        controls: List[ControlValue] = ControlsField(
+            options=[InputImageControl(required=True)]
+        ),
         resolution: int = 256,
         remove_background: bool = True,
         foreground_ratio: float = 0.85,
         format: str = "glb",
     ):
-        input_image = controls[0]
+        input_image: ControlValue = next(
+            filter(lambda control: control.type == InputImageControl().type, controls),
+            None,
+        )
+
+        if input_image is None:
+            raise Exception("Input control is required")
 
         image = input_image.to_pil_image()
+
+        if image is None:
+            raise Exception("Error converting input image to Image")
 
         image = preprocess_image(
             image, remove_background, foreground_ratio, self.rembg_session

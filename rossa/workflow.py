@@ -1,3 +1,4 @@
+from typing import Any, Dict, Optional, Union
 from .image import Image
 from .schema import FieldType
 from abc import abstractmethod
@@ -7,15 +8,17 @@ import inspect
 
 
 class BaseWorkflow(BaseModel):
-    def __init_subclass__(cls, image: Image, version: str, **kwargs):
-        cls.version = version
-        cls.image = image
+    image: Image
+    title: str
+    version: str
+    description: str
+    tooltip: Optional[str] = None
+
+    def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
         cls.run = validate_arguments(cls.run)
 
     def schema(self):
-        super_schema = super().schema()
-
         fields = []
 
         for name, param in inspect.signature(self.run).parameters.items():
@@ -51,17 +54,14 @@ class BaseWorkflow(BaseModel):
             )
 
         new_schema = {
-            "title": super_schema["title"],
-            "description": super_schema["description"],
+            "title": self.title,
             "version": self.version,
+            "description": self.description,
+            "tooltip": self.tooltip or "",
             "fields": fields,
         }
 
         return new_schema
-
-    @property
-    def image(self) -> Image:
-        return self.image
 
     def download(self):
         pass
@@ -75,31 +75,39 @@ class BaseWorkflow(BaseModel):
 
     def to_modal(
         self,
-        stub_name: str = None,
-        stub_args: str = "",
-        cls_code: str = None,
-        return_dict: bool = False,
-    ) -> str:
+        modal_stub_name: str = None,
+        modal_stub_args: str = "",
+        custom_class_code: str = None,
+        dockerfile_path: str = None,
+        return_code_and_dockerfile: bool = False,
+    ) -> Union[str, Dict[str, Any]]:
         """
-        Returns a script or file content as a string to deploy the workflow on Modal's cloud infrastructure.
+        Generates the necessary code or file content to deploy the workflow on Modal's cloud infrastructure.
 
-        This method generates the necessary code or file content to deploy your workflow on Modal.
-        It takes several arguments to configure the deployment settings.
+        This method creates a script that can be used to deploy your workflow on Modal. It takes several
+        arguments to customize the deployment settings, such as the stub name, additional stub arguments,
+        and custom class code.
 
         Args:
-            stub_name (str): The name of the workflow stub.
-            stub_args (str, optional): Additional arguments to pass to the workflow stub.
+            modal_stub_name (str): The name of the Modal stub for the workflow.
+            modal_stub_args (str, optional): Additional arguments to pass to the Modal stub.
+            custom_class_code (str, optional): Custom class code to include in the generated script.
+            dockerfile_path (str, optional): Path to save the generated Dockerfile. If not provided, a temporary file will be used.
+            return_code_and_dockerfile (bool, optional): Whether to return the generated code and Dockerfile content as a dictionary.
 
-        NOTE: Every modal import should be imported by `modal.*` such as `modal.gpu.A10G()` or `modal.Secret.from_name("super-secret")`
+        Returns:
+            str or Dict[str, Any]: The generated Modal deployment code, or a dictionary containing the code and Dockerfile content.
+
+        NOTE: Every Modal import should be imported using `modal.*`, such as `modal.gpu.A10G()` or `modal.Secret.from_name("super-secret")`.
 
         Example:
             ```python
             import modal
             import os
 
-            deployment_script = Workflow().to_modal(
-                stub_name="image-to-threed-triposr",
-                stub_args=\"""
+            deployment_code = Workflow().generate_modal_deployment_code(
+                modal_stub_name="image-to-threed-triposr",
+                modal_stub_args=\"""
                 gpu=modal.gpu.A10G(),
                 allow_concurrent_inputs=4,
                 container_idle_timeout=240,
@@ -107,65 +115,81 @@ class BaseWorkflow(BaseModel):
             )
 
             with open("deployment.py", "w") as f:
-                f.write(deployment_script)
+                f.write(deployment_code)
 
             os.system("modal deploy deployment.py")
-        ```"""
+        ```
+        """
+        dockerfile_content = self.image.to_dockerfile()
 
-        dockerfile = self.image.to_dockerfile()
+        # It uses the class name as the default stub name instead of `self.schema()["title"]` due to Modal naming constraints.
+        modal_stub_name = modal_stub_name or self.__class__.__name__[:64]
+        dockerfile_path = dockerfile_path or "Dockerfile"
 
-        stub_name = stub_name or self.schema()["title"]
-
-        dockerfilename = "Dockerfile"
-
-        if not return_dict:
+        if not return_code_and_dockerfile:
             import tempfile
 
-            dockerfilename = tempfile.mktemp()
+            dockerfile_path = tempfile.mktemp()
+            with open(dockerfile_path, "w") as f:
+                f.write(dockerfile_content)
 
-            with open(dockerfilename, "w") as f:
-                f.write(dockerfile)
-
-        if cls_code is None:
+        if custom_class_code is None:
             with open(inspect.getsourcefile(self.__class__), "r") as f:
-                code = f.read()
+                class_code = f.read()
         else:
-            code = cls_code
+            class_code = custom_class_code
 
-        code = f"""
-{code}
+        is_same_download_method = inspect.getsource(self.download) == inspect.getsource(
+            BaseWorkflow.download
+        )
+        is_same_load_method = inspect.getsource(self.load) == inspect.getsource(
+            BaseWorkflow.load
+        )
 
-import modal
+        modal_import = f"import modal\n\nmodal_image = modal.Image.from_dockerfile({dockerfile_path!r})\n\nstub = modal.Stub({modal_stub_name!r})\n\nworkflow_instance = {self.__class__.__name__}()\n\n"
 
-modal_image = modal.Image.from_dockerfile({dockerfilename!r})
+        download_method = ""
 
-stub = modal.Stub({stub_name!r})
+        if not is_same_download_method:
+            download_method = """
+    @modal.build()
+    def download(self, *args, **kwargs):
+        return workflow_instance.download(*args, **kwargs)
+"""
 
-workflow_to_modal = {self.__class__.__name__}()
+        load_method = ""
+        if not is_same_load_method:
+            load_method = """
+    @modal.enter()
+    def load(self, *args, **kwargs):
+        return workflow_instance.load(*args, **kwargs)
+"""
+
+        run_method = """
+    @modal.method()
+    def run(self, *args, **kwargs):
+        return workflow_instance.run(*args, **kwargs)
+"""
+
+        deployment_code = f"""{class_code}
+
+{modal_import}
 
 @stub.cls(
     image=modal_image,
-    {stub_args}
+    {modal_stub_args}
 )
 class ModalWorkflow:
-    @modal.build()
-    def download(self, *args, **kwargs):
-        return workflow_to_modal.download(*args, **kwargs)
-
-    @modal.enter()
-    def load(self, *args, **kwargs):
-        return workflow_to_modal.load(*args, **kwargs)
-
-    @modal.method()
-    def run(self, *args, **kwargs):
-        return workflow_to_modal.run(*args, **kwargs)
+{download_method}
+{load_method}
+{run_method}
 """
 
-        if return_dict:
+        if return_code_and_dockerfile:
             return {
-                "code": code,
-                "dockerfile": dockerfile,
-                "dockerfilename": dockerfilename,
+                "code": deployment_code,
+                "dockerfile": dockerfile_content,
+                "dockerfile_path": dockerfile_path,
             }
 
-        return code
+        return deployment_code
