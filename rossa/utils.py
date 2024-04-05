@@ -20,6 +20,7 @@ def url_to_pil_image(url: str):
 
 
 def url_to_cv2_image(url: str):
+    """Converts a URL to a cv2 image. Remember to install cv2 and numpy."""
     import cv2
     import numpy as np
 

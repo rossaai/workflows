@@ -40,6 +40,7 @@ class ControlValue(BaseModel):
         return url_to_pil_image(self.url)
 
     def to_cv2_image(self):
+        """Converts a URL to a cv2 image. Remember to install cv2 and numpy."""
         return url_to_cv2_image(self.url)
 
 
