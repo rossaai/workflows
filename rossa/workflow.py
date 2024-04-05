@@ -82,6 +82,7 @@ class BaseWorkflow(BaseModel):
         modal_stub_args: str = "",
         custom_class_code: str = None,
         dockerfile_path: str = None,
+        force_build: bool = False,
         return_code_and_dockerfile: bool = False,
     ) -> Union[str, Dict[str, Any]]:
         """
@@ -149,7 +150,7 @@ class BaseWorkflow(BaseModel):
             BaseWorkflow.load
         )
 
-        modal_import = f"import modal\n\nmodal_image = modal.Image.from_dockerfile({dockerfile_path!r})\n\nstub = modal.Stub({modal_stub_name!r})\n\nworkflow_instance = {self.__class__.__name__}()\n\n"
+        modal_import = f"import modal\n\nmodal_image = modal.Image.from_dockerfile({dockerfile_path!r}, force_build={"True" if force_build else "False" })\n\nstub = modal.Stub({modal_stub_name!r})\n\nworkflow_instance = {self.__class__.__name__}()\n\n"
 
         download_method = ""
 
