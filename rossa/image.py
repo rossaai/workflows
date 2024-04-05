@@ -935,6 +935,7 @@ class _Image:
                 if "/modal_requirements.txt" in command:
                     continue
                 if "pip install -r /modal_requirements.txt" in command:
+                    docker_file += f"RUN apt-get update && apt-get install -y git \n"
                     docker_file += f"RUN python -m pip install git+https://github.com/rossaai/workflows \n"
                     continue
                 docker_file += command + "\n"
