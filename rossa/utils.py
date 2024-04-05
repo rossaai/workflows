@@ -2,8 +2,6 @@ import base64
 from io import BytesIO
 from PIL import Image
 import requests
-import cv2
-import numpy as np
 
 
 def url_to_pil_image(url: str):
@@ -22,6 +20,9 @@ def url_to_pil_image(url: str):
 
 
 def url_to_cv2_image(url: str):
+    import cv2
+    import numpy as np
+
     if not isinstance(url, str):
         return None
 
