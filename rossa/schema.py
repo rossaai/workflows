@@ -46,7 +46,7 @@ class ControlValue(BaseModel):
         return img
 
     def to_cv2_image(self):
-        """Converts a URL to a cv2 image. Remember to install cv2 and numpy."""
+        "" 'Converts a URL to a cv2 image. Remember to `.apt_install("ffmpeg", "libsm6", "libxext6")` to your `rossa.Image`.' ""
         img = url_to_cv2_image(self.url)
 
         if img is None:

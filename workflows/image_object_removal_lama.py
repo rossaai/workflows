@@ -9,8 +9,10 @@ from rossa import (
 )
 
 
-image = Image.debian_slim(python_version="3.10").pip_install(
-    "simple-lama-inpainting==0.1.2"
+image = (
+    Image.debian_slim(python_version="3.10")
+    .apt_install("ffmpeg", "libsm6", "libxext6")
+    .pip_install("simple-lama-inpainting==0.1.2")
 )
 
 
