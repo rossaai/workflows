@@ -14,6 +14,9 @@ class BaseWorkflow(BaseModel):
     description: str
     tooltip: Optional[str] = None
 
+    class Config:
+        arbitrary_types_allowed = True
+
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
         cls.run = validate_arguments(cls.run)
