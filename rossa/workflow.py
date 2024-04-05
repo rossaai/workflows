@@ -150,7 +150,7 @@ class BaseWorkflow(BaseModel):
             BaseWorkflow.load
         )
 
-        modal_import = f"import modal\n\nmodal_image = modal.Image.from_dockerfile({dockerfile_path!r}, force_build={"True" if force_build else "False" })\n\nstub = modal.Stub({modal_stub_name!r})\n\nworkflow_instance = {self.__class__.__name__}()\n\n"
+        modal_import = f"""import modal\n\nmodal_image = modal.Image.from_dockerfile({dockerfile_path!r}, force_build={force_build})\n\nstub = modal.Stub({modal_stub_name!r})\n\nworkflow_instance = {self.__class__.__name__}()\n\n"""
 
         download_method = ""
 
