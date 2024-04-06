@@ -128,7 +128,7 @@ class Workflow(BaseWorkflow):
         format: str = "glb",
     ):
         input_image: ControlValue = next(
-            filter(lambda control: control.type == InputImageControl().type, controls),
+            filter(lambda control: control.type == InputImageControl().value, controls),
             None,
         )
 

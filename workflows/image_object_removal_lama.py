@@ -40,12 +40,12 @@ class Workflow(BaseWorkflow):
         ),
     ):
         mask: ControlValue = next(
-            filter(lambda control: control.type == MaskImageControl().type, controls),
+            filter(lambda control: control.type == MaskImageControl().value, controls),
             None,
         )
 
         image: ControlValue = next(
-            filter(lambda control: control.type == InputImageControl().type, controls),
+            filter(lambda control: control.type == InputImageControl().value, controls),
             None,
         )
 
