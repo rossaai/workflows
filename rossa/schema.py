@@ -163,20 +163,23 @@ class FieldType(str, Enum):
     CONTROLS = "controls"
 
 
+FieldTypeLiteral = Literal[
+    "text",
+    "textarea",
+    "number",
+    "integer",
+    "checkbox",
+    "select",
+    "prompt",
+    "negative_prompt",
+    "performance",
+    "controls",
+]
+
+
 def BaseField(
     title: str,
-    type: Literal[
-        "text",
-        "textarea",
-        "number",
-        "integer",
-        "checkbox",
-        "select",
-        "prompt",
-        "negative_prompt",
-        "performance",
-        "controls",
-    ],
+    type: FieldTypeLiteral,
     description: str,
     alias: str = None,
     placeholder: str = "",
@@ -363,7 +366,7 @@ def PerformanceField(
         if not isinstance(option, BasePerformance):
             raise Exception("Performance options must be a list of BasePerformance.")
 
-    return SelectField(
+    return BaseField(
         type=FieldType.PERFORMANCE.value,
         alias="performance",
         default=[],
@@ -384,7 +387,7 @@ def ControlsField(
         if not isinstance(option, BaseControl):
             raise Exception("Control options must be a list of BaseControl.")
 
-    return SelectField(
+    return BaseField(
         type=FieldType.CONTROLS.value,
         alias="controls",
         default=[],

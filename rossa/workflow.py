@@ -127,18 +127,20 @@ class BaseWorkflow(BaseModel):
             os.system("modal deploy deployment.py")
         ```
         """
-        dockerfile_content = self.image.to_dockerfile()
 
         # It uses the class name as the default stub name instead of `self.schema()["title"]` due to Modal naming constraints.
         modal_stub_name = modal_stub_name or self.__class__.__name__[:64]
         dockerfile_path = dockerfile_path or "Dockerfile"
 
-        if not return_code_and_dockerfile:
-            import tempfile
+        if self.image:
+            dockerfile_content = self.image.to_dockerfile()
 
-            dockerfile_path = tempfile.mktemp()
-            with open(dockerfile_path, "w") as f:
-                f.write(dockerfile_content)
+            if not return_code_and_dockerfile:
+                import tempfile
+
+                dockerfile_path = tempfile.mktemp()
+                with open(dockerfile_path, "w") as f:
+                    f.write(dockerfile_content)
 
         if custom_class_code is None:
             with open(inspect.getsourcefile(self.__class__), "r") as f:
@@ -153,11 +155,27 @@ class BaseWorkflow(BaseModel):
             BaseWorkflow.load
         )
 
-        modal_import = f"""import modal\n\nmodal_image = modal.Image.from_dockerfile({dockerfile_path!r}, force_build={force_build})\n\nstub = modal.Stub({modal_stub_name!r})\n\nworkflow_instance = {self.__class__.__name__}()\n\n"""
+        if self.image:
+            modal_import = f"""
+import modal
+
+modal_image = modal.Image.from_dockerfile(
+    {dockerfile_path!r}, 
+    force_build={force_build}
+)
+    
+stub = modal.Stub({modal_stub_name!r})
+
+workflow_instance = {self.__class__.__name__}()\n"""
+        else:
+            modal_import = f"""import modal\n\nstub = modal.Stub({modal_stub_name!r})\n\nworkflow_instance = {self.__class__.__name__}()\n"""
 
         download_method = ""
 
-        stub_args = "image=modal_image,\n" if self.image else ""
+        stub_args = "image=modal_image" if self.image else ""
+
+        if self.image and modal_stub_args:
+            stub_args += ",\n"
 
         stub_args += modal_stub_args if modal_stub_args else ""
 
@@ -183,7 +201,6 @@ class BaseWorkflow(BaseModel):
 """
 
         deployment_code = f"""{class_code}
-
 {modal_import}
 
 @stub.cls(
