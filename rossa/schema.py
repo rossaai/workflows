@@ -258,6 +258,10 @@ def SelectField(
     placeholder: str = "",
     **kwargs,
 ):
+    for option in options:
+        if not isinstance(option, Option):
+            raise Exception("Select options must be a list of Option.")
+
     return PydanticField(
         type=FieldType.SELECT.value,
         title=title,
@@ -310,7 +314,11 @@ def PerformanceField(
     options: List[BasePerformance] = [],
     **kwargs,
 ):
-    return PydanticField(
+    for option in options:
+        if not isinstance(option, BasePerformance):
+            raise Exception("Performance options must be a list of BasePerformance.")
+
+    return SelectField(
         type=FieldType.PERFORMANCE.value,
         alias="performance",
         default=[],
@@ -327,7 +335,11 @@ def ControlsField(
     options: List[BaseControl] = [],
     **kwargs,
 ):
-    return PydanticField(
+    for option in options:
+        if not isinstance(option, BaseControl):
+            raise Exception("Control options must be a list of BaseControl.")
+
+    return SelectField(
         type=FieldType.CONTROLS.value,
         alias="controls",
         default=[],

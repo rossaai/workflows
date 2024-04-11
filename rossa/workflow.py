@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional, Union
 from .image import Image
-from .schema import ContentType, FieldType
+from .schema import ContentType, FieldType, Option
 from abc import abstractmethod
 from pydantic import BaseModel, validate_arguments
 from pydantic.fields import FieldInfo
@@ -45,7 +45,8 @@ class BaseWorkflow(BaseModel):
                 default.extra["options"], list
             ):
                 for option in default.extra["options"]:
-                    options.append(option.dict())
+                    if isinstance(option, Option):
+                        options.append(option.json())
 
             fields.append(
                 {
