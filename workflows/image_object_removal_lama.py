@@ -6,6 +6,7 @@ from rossa import (
     InputImageControl,
     ControlValue,
     MaskImageControl,
+    ContentType,
 )
 
 
@@ -26,6 +27,7 @@ class Workflow(BaseWorkflow):
     version = "Lama V1"
     description = "Seamlessly remove unwanted objects or people from images."
     tooltip = "Select the areas you want to remove, and our AI will intelligently fill those regions to blend naturally with the surrounding image."
+    content_type = ContentType.IMAGE
 
     def download(self):
         SimpleLama()

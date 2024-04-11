@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional, Union
 from .image import Image
-from .schema import FieldType
+from .schema import ContentType, FieldType
 from abc import abstractmethod
 from pydantic import BaseModel, validate_arguments
 from pydantic.fields import FieldInfo
@@ -8,10 +8,11 @@ import inspect
 
 
 class BaseWorkflow(BaseModel):
-    image: Image
+    image: Optional[Image] = None
     title: str
     version: str
     description: str
+    content_type: ContentType
     tooltip: Optional[str] = None
 
     class Config:
@@ -48,7 +49,7 @@ class BaseWorkflow(BaseModel):
 
             fields.append(
                 {
-                    "key": name,
+                    "name": name,
                     "title": default.title,
                     "type": default.extra["type"],
                     "description": default.description,
@@ -60,6 +61,7 @@ class BaseWorkflow(BaseModel):
             "title": self.title,
             "version": self.version,
             "description": self.description,
+            "content_type": self.content_type.value,
             "tooltip": self.tooltip or "",
             "fields": fields,
         }
@@ -154,6 +156,10 @@ class BaseWorkflow(BaseModel):
 
         download_method = ""
 
+        stub_args = "image=modal_image,\n" if self.image else ""
+
+        stub_args += modal_stub_args if modal_stub_args else ""
+
         if not is_same_download_method:
             download_method = """
     @modal.build()
@@ -180,8 +186,7 @@ class BaseWorkflow(BaseModel):
 {modal_import}
 
 @stub.cls(
-    image=modal_image,
-    {modal_stub_args}
+    {stub_args}
 )
 class ModalWorkflow:
 {download_method}

@@ -1,6 +1,13 @@
 from typing import List
 from fastapi import Response
-from rossa import Image, BaseWorkflow, ControlsField, ControlValue, InputImageControl
+from rossa import (
+    Image,
+    BaseWorkflow,
+    ControlsField,
+    ControlValue,
+    InputImageControl,
+    ContentType,
+)
 
 # Adapted from: https://github.com/camenduru/TripoSR-replicate/blob/main/cog.yaml
 image = (
@@ -80,6 +87,7 @@ class Workflow(BaseWorkflow):
     version = "TripoSR"
     description = "Creates a 3D model from provided image."
     tooltip = "Creates a 3D model using the input image as reference."
+    content_type = ContentType.IMAGE
 
     def download(self):
         TSR.from_pretrained(
