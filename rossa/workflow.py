@@ -46,7 +46,7 @@ class BaseWorkflow(BaseModel):
             ):
                 for option in default.extra["options"]:
                     if isinstance(option, Option):
-                        options.append(option.json())
+                        options.append(option.dict())
 
             fields.append(
                 {
