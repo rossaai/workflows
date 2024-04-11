@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field as PydanticField
-from typing import List, Optional, Union
+from typing import List, Literal, Optional, Union
 from enum import Enum
 from .utils import url_to_pil_image, url_to_cv2_image
 
@@ -13,7 +13,7 @@ class Option(BaseModel):
 
 
 # CONTENT TYPE
-class ContentType(Enum):
+class ContentType(str, Enum):
     IMAGE = "image"
     TEXT = "text"
     VIDEO = "video"
@@ -22,7 +22,7 @@ class ContentType(Enum):
 
 
 # CONTROLS
-class ControlType(Enum):
+class ControlType(str, Enum):
     INPUT = "input"
     MASK = "mask"
     CONTROL_CANNY = "control-canny"
@@ -115,7 +115,7 @@ class PoseControl(BaseControl):
 
 
 # PERFORMANCE
-class PerformanceType(Enum):
+class PerformanceType(str, Enum):
     INSTANT = "instant"
     BALANCED = "balanced"
     QUALITY = "quality"
@@ -150,7 +150,7 @@ class QualityPerformance(BasePerformance):
 
 
 # FIELDS
-class FieldType(Enum):
+class FieldType(str, Enum):
     TEXT = "text"
     TEXTAREA = "textarea"
     NUMBER = "number"
@@ -163,13 +163,62 @@ class FieldType(Enum):
     CONTROLS = "controls"
 
 
+def BaseField(
+    title: str,
+    type: Literal[
+        "text",
+        "textarea",
+        "number",
+        "integer",
+        "checkbox",
+        "select",
+        "prompt",
+        "negative_prompt",
+        "performance",
+        "controls",
+    ],
+    description: str,
+    alias: str = None,
+    placeholder: str = "",
+    options: Optional[List[Option]] = None,
+    **kwargs,
+):
+    if options:
+        for option in options:
+            if not isinstance(option, Option):
+                raise Exception("Field options must be a list of Option.")
+
+    if type == FieldType.SELECT and not options:
+        raise Exception("Select fields must have options.")
+
+    if type == FieldType.PERFORMANCE and not options:
+        raise Exception("Performance fields must have options.")
+
+    if type == FieldType.CONTROLS and not options:
+        raise Exception("Controls fields must have options.")
+
+    # validate if type is in FieldType
+    if type not in set(FieldType):
+        raise Exception("Field type must be in FieldType.")
+
+    return PydanticField(
+        title=title,
+        type=type,
+        alias=alias,
+        description=description,
+        placeholder=placeholder,
+        options=options,
+        **kwargs,
+    )
+
+
 def TextField(
     title: str,
     description: str,
     placeholder: str = "",
     **kwargs,
 ):
-    return PydanticField(
+    return BaseField(
         type=FieldType.TEXT.value,
         title=title,
         description=description,
@@ -184,7 +233,7 @@ def TextAreaField(
     placeholder: str = "",
     **kwargs,
 ):
-    return PydanticField(
+    return BaseField(
         type=FieldType.TEXTAREA.value,
         title=title,
         description=description,
@@ -202,7 +251,7 @@ def NumberField(
     step: Optional[float] = None,
     **kwargs,
 ):
-    return PydanticField(
+    return BaseField(
         type=FieldType.NUMBER.value,
         title=title,
         description=description,
@@ -223,7 +272,7 @@ def IntegerField(
     step: Optional[int] = None,
     **kwargs,
 ):
-    return PydanticField(
+    return BaseField(
         type=FieldType.INTEGER.value,
         title=title,
         description=description,
@@ -241,7 +290,7 @@ def CheckboxField(
     placeholder: str = "",
     **kwargs,
 ):
-    return PydanticField(
+    return BaseField(
         type=FieldType.CHECKBOX.value,
         title=title,
         description=description,
@@ -258,11 +307,7 @@ def SelectField(
     placeholder: str = "",
     **kwargs,
 ):
-    for option in options:
-        if not isinstance(option, Option):
-            raise Exception("Select options must be a list of Option.")
-
-    return PydanticField(
+    return BaseField(
         type=FieldType.SELECT.value,
         title=title,
         description=description,
@@ -280,7 +325,7 @@ def PromptField(
     placeholder: str = "What do you want to create?",
     **kwargs,
 ):
-    return PydanticField(
+    return BaseField(
         type=FieldType.PROMPT.value,
         alias="prompt",
         title=title,
@@ -297,7 +342,7 @@ def NegativePromptField(
     placeholder: str = "What do you want to avoid?",
     **kwargs,
 ):
-    return PydanticField(
+    return BaseField(
         type=FieldType.NEGATIVE_PROMPT.value,
         alias="negative_prompt",
         title=title,
