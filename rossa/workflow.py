@@ -1,6 +1,6 @@
 from typing import Any, Dict, Generator, List, Optional, Union
 
-from .responses import ProgressNotification, Response
+from .responses import Notification, Response
 from .image import Image
 from .fields import FieldType, Option
 from abc import abstractmethod
@@ -11,8 +11,8 @@ import inspect
 
 
 ReturnResults = Union[
-    Union[Response, ProgressNotification],
-    List[Union[Response, ProgressNotification]],
+    Union[Response, Notification],
+    List[Union[Response, Notification]],
 ]
 
 
@@ -230,11 +230,13 @@ workflow_instance = {self.__class__.__name__}()\n"""
         run_method = """
     @modal.method()
     def run(self, *args, **kwargs):
-        if inspect.isgeneratorfunction(workflow_instance.run):
-            for x in workflow_instance.run(*args, **kwargs):
+        result = workflow_instance.run(*args, **kwargs)
+
+        if inspect.isgenerator(result):
+            for x in result:
                 yield x
         else:
-            yield workflow_instance.run(*args, **kwargs)
+            yield result
 """
 
         deployment_code = f"""{class_code}

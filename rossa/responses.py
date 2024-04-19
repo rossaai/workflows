@@ -1,3 +1,4 @@
+from enum import Enum
 import mimetypes
 import os
 from typing import Optional, Union
@@ -10,7 +11,7 @@ import io
 import requests
 from fastapi import Response as FastAPIResponse
 
-from .types import ContentType
+from .types import ContentType, ProgressNotificationType
 
 
 class BaseResponse(BaseModel):
@@ -117,16 +118,36 @@ class ThreeDResponse(BaseResponse):
     content_type: ContentType = ContentType.THREE_D
 
 
-class ProgressNotification(BaseModel):
+class BaseNotification(BaseModel):
+    type: ProgressNotificationType
     progress: float = Field(ge=0, le=1, description="Progress value between 0 and 1")
     message: str = Field(default=None, description="Optional progress message")
     title: Optional[str] = Field(default=None, description="Optional progress title")
 
 
+class ProgressNotification(BaseNotification):
+    type: ProgressNotificationType = ProgressNotificationType.PROGRESS
+
+
+class ErrorNotification(ProgressNotification):
+    type: ProgressNotificationType = ProgressNotificationType.ERROR
+    progress: float = Field(default=1.0)
+    traceback: Optional[str] = Field(default=None, description="Optional traceback")
+
+
+class SuccessNotification(ProgressNotification):
+    type: ProgressNotificationType = ProgressNotificationType.SUCCESS
+    progress: float = Field(default=1.0)
+
+
 Response = Union[
+    BaseResponse,
     ImageResponse,
     VideoResponse,
     AudioResponse,
     TextResponse,
     ThreeDResponse,
 ]
+
+
+Notification = Union[ProgressNotification, ErrorNotification, SuccessNotification]

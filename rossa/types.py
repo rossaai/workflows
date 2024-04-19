@@ -7,3 +7,9 @@ class ContentType(str, Enum):
     AUDIO = "audio"
     TEXT = "text"
     THREE_D = "threed"
+
+
+class ProgressNotificationType(str, Enum):
+    PROGRESS = "progress"
+    ERROR = "error"
+    SUCCESS = "success"
