@@ -6,6 +6,7 @@ import shlex
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+import traceback
 from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
 import warnings
 
@@ -944,7 +945,7 @@ class _Image:
         return docker_file
 
     @contextlib.contextmanager
-    def imports(self):
+    def imports(self, debug: bool = False):
         try:
             yield
         except Exception as exc:
@@ -953,6 +954,9 @@ class _Image:
                 warnings.warn(
                     f"Warning: caught a non-ImportError exception in an `imports()` block: {repr(exc)}"
                 )
+                
+            if debug:
+                traceback.print_exc()
 
 
 Image = _Image
