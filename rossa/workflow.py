@@ -1,13 +1,14 @@
 from typing import Any, Dict, Optional, Union
 from .image import Image
-from .schema import ContentType, FieldType, Option
+from .fields import FieldType, Option
 from abc import abstractmethod
-from pydantic import BaseModel, validate_arguments
+from .types import ContentType
+from pydantic import validate_arguments
 from pydantic.fields import FieldInfo
 import inspect
 
 
-class BaseWorkflow(BaseModel):
+class BaseWorkflow:
     image: Optional[Image] = None
     title: str
     version: str
@@ -23,6 +24,16 @@ class BaseWorkflow(BaseModel):
         cls.run = validate_arguments(cls.run)
 
     def schema(self):
+        # validate title, version, description, content_type, and tooltip
+        if not isinstance(self.title, str):
+            raise ValueError("title must be a string")
+        if not isinstance(self.version, str):
+            raise ValueError("version must be a string")
+        if not isinstance(self.description, str):
+            raise ValueError("description must be a string")
+        if not isinstance(self.content_type, ContentType):
+            raise ValueError("content_type must be a ContentType")
+
         fields = []
 
         for name, param in inspect.signature(self.run).parameters.items():
@@ -182,16 +193,16 @@ workflow_instance = {self.__class__.__name__}()\n"""
         if not is_same_download_method:
             download_method = """
     @modal.build()
-    def download(self, *args, **kwargs):
-        return workflow_instance.download(*args, **kwargs)
+    def download(self):
+        return workflow_instance.download()
 """
 
         load_method = ""
         if not is_same_load_method:
             load_method = """
     @modal.enter()
-    def load(self, *args, **kwargs):
-        return workflow_instance.load(*args, **kwargs)
+    def load(self):
+        return workflow_instance.load()
 """
 
         run_method = """

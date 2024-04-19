@@ -12,15 +12,6 @@ class Option(BaseModel):
     default: Optional[bool] = False
 
 
-# CONTENT TYPE
-class ContentType(str, Enum):
-    IMAGE = "image"
-    TEXT = "text"
-    VIDEO = "video"
-    THREE_D = "threed"
-    AUDIO = "audio"
-
-
 # CONTROLS
 class ControlType(str, Enum):
     INPUT = "input"

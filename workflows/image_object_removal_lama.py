@@ -7,6 +7,7 @@ from rossa import (
     ControlValue,
     MaskImageControl,
     ContentType,
+    ImageResponse,
 )
 
 
@@ -30,7 +31,7 @@ class Workflow(BaseWorkflow):
     content_type = ContentType.IMAGE
 
     def download(self):
-        SimpleLama()
+        self.simple_lama = SimpleLama()
 
     def load(self):
         self.simple_lama = SimpleLama()
@@ -60,4 +61,4 @@ class Workflow(BaseWorkflow):
 
         result = self.simple_lama(image, mask)
 
-        return result
+        return ImageResponse(content=result)
