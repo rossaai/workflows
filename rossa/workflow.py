@@ -1,6 +1,6 @@
 from typing import Any, Dict, Generator, List, Optional, Union
 
-from rossa import ProgressNotification, Response
+from .responses import ProgressNotification, Response
 from .image import Image
 from .fields import FieldType, Option
 from abc import abstractmethod
