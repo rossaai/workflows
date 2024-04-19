@@ -1,5 +1,4 @@
 from typing import List
-from fastapi import Response
 from rossa import (
     Image,
     BaseWorkflow,
@@ -7,6 +6,7 @@ from rossa import (
     ControlValue,
     InputImageControl,
     ContentType,
+    ThreeDResponse,
 )
 
 # Adapted from: https://github.com/camenduru/TripoSR-replicate/blob/main/cog.yaml
@@ -159,4 +159,4 @@ class Workflow(BaseWorkflow):
         mesh_glb = mesh.export(file_type=format)
 
         # save mesh to file with same format
-        return Response(content=mesh_glb, media_type="application/octet-stream")
+        return ThreeDResponse(content=mesh_glb)
