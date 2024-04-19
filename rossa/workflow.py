@@ -1,4 +1,6 @@
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Generator, List, Optional, Union
+
+from rossa import ProgressNotification, Response
 from .image import Image
 from .fields import FieldType, Option
 from abc import abstractmethod
@@ -6,6 +8,12 @@ from .types import ContentType
 from pydantic import validate_arguments
 from pydantic.fields import FieldInfo
 import inspect
+
+
+ReturnResults = Union[
+    Union[Response, ProgressNotification],
+    List[Union[Response, ProgressNotification]],
+]
 
 
 class BaseWorkflow:
@@ -87,7 +95,14 @@ class BaseWorkflow:
         pass
 
     @abstractmethod
-    def run(self):
+    def run(self) -> Union[
+        Generator[
+            ReturnResults,
+            None,
+            None,
+        ],
+        ReturnResults,
+    ]:
         pass
 
     def to_modal(
@@ -169,6 +184,7 @@ class BaseWorkflow:
         if self.image:
             modal_import = f"""
 import modal
+import inspect
 
 modal_image = modal.Image.from_dockerfile(
     {dockerfile_path!r}, 
@@ -179,7 +195,13 @@ stub = modal.Stub({modal_stub_name!r})
 
 workflow_instance = {self.__class__.__name__}()\n"""
         else:
-            modal_import = f"""import modal\n\nstub = modal.Stub({modal_stub_name!r})\n\nworkflow_instance = {self.__class__.__name__}()\n"""
+            modal_import = f"""
+import modal
+import inspect
+
+stub = modal.Stub({modal_stub_name!r})
+
+workflow_instance = {self.__class__.__name__}()\n"""
 
         download_method = ""
 
@@ -208,7 +230,11 @@ workflow_instance = {self.__class__.__name__}()\n"""
         run_method = """
     @modal.method()
     def run(self, *args, **kwargs):
-        return workflow_instance.run(*args, **kwargs)
+        if inspect.isgeneratorfunction(workflow_instance.run):
+            for x in workflow_instance.run(*args, **kwargs):
+                yield x
+        else:
+            yield workflow_instance.run(*args, **kwargs)
 """
 
         deployment_code = f"""{class_code}

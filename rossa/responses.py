@@ -1,4 +1,5 @@
 import mimetypes
+import os
 from typing import Optional, Union
 from pydantic import BaseModel, Field
 from PIL import Image
@@ -35,14 +36,33 @@ class BaseResponse(BaseModel):
                 content = base64.b64decode(encoded)
                 return FastAPIResponse(content=content, media_type=media_type)
             else:
-                with open(self.content, "rb") as file:
-                    content = file.read()
-                    media_type, _ = mimetypes.guess_type(self.content)
-                    return FastAPIResponse(content=content, media_type=media_type)
+                if os.path.isfile(self.content):
+                    with open(self.content, "rb") as file:
+                        content = file.read()
+                        media_type, _ = mimetypes.guess_type(self.content)
+                        return FastAPIResponse(content=content, media_type=media_type)
+                else:
+                    raise ValueError(f"File not found: {self.content}")
         elif isinstance(self.content, bytes):
             return FastAPIResponse(
                 content=self.content, media_type=self.content_type.value
             )
+
+    def save(self, file_path: str):
+        with open(file_path, "wb") as file:
+            if isinstance(self.content, str):
+                if self.content.startswith(("http://", "https://")):
+                    response = requests.get(self.content)
+                    file.write(response.content)
+                elif self.content.startswith("data:"):
+                    header, encoded = self.content.split(",", 1)
+                    content = base64.b64decode(encoded)
+                    file.write(content)
+                else:
+                    with open(self.content, "rb") as src_file:
+                        file.write(src_file.read())
+            elif isinstance(self.content, bytes):
+                file.write(self.content)
 
 
 class ImageResponse(BaseResponse):
@@ -63,6 +83,15 @@ class ImageResponse(BaseResponse):
         else:
             return super().to_response()
 
+    def save(self, file_path: str):
+        if isinstance(self.content, (Image.Image, np.ndarray)):
+            if isinstance(self.content, Image.Image):
+                self.content.save(file_path)
+            else:
+                Image.fromarray(self.content).save(file_path)
+        else:
+            super().save(file_path)
+
 
 class VideoResponse(BaseResponse):
     content_type: ContentType = ContentType.VIDEO
@@ -74,6 +103,14 @@ class AudioResponse(BaseResponse):
 
 class TextResponse(BaseResponse):
     content_type: ContentType = ContentType.TEXT
+    content: str = Field(description="Text content as string")
+
+    def to_response(self) -> FastAPIResponse:
+        return FastAPIResponse(content=self.content, media_type="text/plain")
+
+    def save(self, file_path: str):
+        with open(file_path, "w") as file:
+            file.write(self.content)
 
 
 class ThreeDResponse(BaseResponse):

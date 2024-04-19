@@ -39,7 +39,7 @@ class Workflow(BaseWorkflow):
     def run(
         self,
         controls: List[ControlValue] = ControlsField(
-            options=[InputImageControl(required=True), MaskImageControl(required=True)]
+            options=[InputImageControl(), MaskImageControl()]
         ),
     ):
         mask: ControlValue = next(
@@ -61,4 +61,4 @@ class Workflow(BaseWorkflow):
 
         result = self.simple_lama(image, mask)
 
-        return ImageResponse(content=result)
+        yield ImageResponse(content=result)

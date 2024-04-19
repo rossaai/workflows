@@ -159,4 +159,4 @@ class Workflow(BaseWorkflow):
         mesh_glb = mesh.export(file_type=format)
 
         # save mesh to file with same format
-        return ThreeDResponse(content=mesh_glb)
+        yield ThreeDResponse(content=mesh_glb)
