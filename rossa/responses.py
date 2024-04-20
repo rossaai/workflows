@@ -1,4 +1,3 @@
-from enum import Enum
 import mimetypes
 import os
 from typing import Optional, Union
