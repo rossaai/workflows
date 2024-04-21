@@ -15,9 +15,6 @@ class ProgressNotificationType(str, Enum):
     SUCCESS = "success"
 
 
-from enum import Enum
-
-
 class ApplicableFor(str, Enum):
     """
     An enumeration representing the applicability of a requirement.
