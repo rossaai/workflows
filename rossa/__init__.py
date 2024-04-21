@@ -28,6 +28,8 @@ from .fields import (
     NegativePromptField,
     PerformanceField,
     ControlsField,
+    ApplicableForRequeriments,
+    ControlRequeriments,
 )
 
 from .responses import (
@@ -46,6 +48,7 @@ from .responses import (
 
 from .types import (
     ContentType,
+    ApplicableFor,
 )
 
 __all__ = [
@@ -77,6 +80,8 @@ __all__ = [
     "NegativePromptField",
     "PerformanceField",
     "ControlsField",
+    "ApplicableForRequeriments",
+    "ControlRequeriments",
     # Workflow
     "BaseWorkflow",
     # Image
@@ -92,7 +97,8 @@ __all__ = [
     "ProgressNotification",
     "SuccessNotification",
     "ErrorNotification",
-    "Notification"
+    "Notification",
     # Types
     "ContentType",
+    "ApplicableFor",
 ]

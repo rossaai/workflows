@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field as PydanticField
 from typing import List, Literal, Optional, Union
 from enum import Enum
+
+from .types import ApplicableFor
 from .utils import url_to_pil_image, url_to_cv2_image
 
 
@@ -18,7 +20,7 @@ class ControlType(str, Enum):
     MASK = "mask"
     CONTROL_CANNY = "control-canny"
     CONTROL_POSE = "control-pose"
-    CONTROL_IMAGE_PROMPT = "control-image-prompt"
+    CONTROL_STYLE_TRANSFER = "control-style-transfer"
     CONTROL_FACE_SWAP = "control-face-swap"
 
 
@@ -46,9 +48,62 @@ class ControlValue(BaseModel):
         return img
 
 
+class ApplicableForRequeriments(BaseModel):
+    """
+    Represents the requirements for a specific applicability level.
+
+    Attributes:
+        required (bool): Indicates whether the requirement is mandatory. Default is False.
+        editable (bool): Indicates whether the requirement is editable. Default is True.
+
+    Examples:
+        >>> reqs = ApplicableForRequeriments(required=True, editable=False)
+        >>> print(reqs.required)
+        True
+        >>> print(reqs.editable)
+        False
+    """
+
+    required: bool = False
+    editable: bool = True
+
+
+class ControlRequeriments(BaseModel):
+    """
+    Represents the control requirements for different applicability levels.
+
+    Attributes:
+        all (Optional[ApplicableForRequeriments]): The requirements applicable for all levels.
+        parent (Optional[ApplicableForRequeriments]): The requirements applicable for the parent level.
+        child (Optional[ApplicableForRequeriments]): The requirements applicable for the child level.
+
+    Examples:
+        >>> control_reqs = ControlRequeriments(
+        ...     all=ApplicableForRequeriments(required=True),
+        ...     parent=ApplicableForRequeriments(editable=False),
+        ...     child=ApplicableForRequeriments(required=False, editable=True)
+        ... )
+        >>> print(control_reqs.all.required)
+        True
+        >>> print(control_reqs.parent.editable)
+        False
+        >>> print(control_reqs.child.required)
+        False
+    """
+
+    all: Optional[ApplicableForRequeriments]
+    parent: Optional[ApplicableForRequeriments]
+    child: Optional[ApplicableForRequeriments]
+
+
 class BaseControl(Option):
     value: Union[ControlType, str]
-    required: bool = False
+    applicable_for: List[ApplicableFor] = PydanticField(
+        default=[ApplicableFor.ALL],
+        title="Applicable For",
+        description="The control is applicable for the following elements.",
+    )
+    requeriments: Optional[ControlRequeriments]
 
 
 class InputControl(BaseControl):
@@ -58,23 +113,11 @@ class InputControl(BaseControl):
     tooltip: str = "Use text, images, or videos to guide generation."
 
 
-class InputImageControl(InputControl):
-    title: str = "Input Image"
-    description: str = "Input image for generation."
-    tooltip: str = "Use images to guide generation."
-
-
 class MaskControl(BaseControl):
     value: ControlType = ControlType.MASK
     title: str = "Mask"
     description: str = "Mask for generation."
     tooltip: str = "Use masks to guide generation."
-
-
-class MaskImageControl(MaskControl):
-    title: str = "Mask Image"
-    description: str = "Mask image for generation."
-    tooltip: str = "Use images as masks to guide generation."
 
 
 class CannyControl(BaseControl):
@@ -89,6 +132,28 @@ class PoseControl(BaseControl):
     title: str = "Pose"
     description: str = "Incorporates a specific pose into your image generation."
     tooltip: str = "Incorporate poses into new images."
+
+
+class InputImageControl(InputControl):
+    title: str = "Input Image"
+    description: str = "Input image for generation."
+    tooltip: str = "Use images to guide generation."
+    applicable_for: List[ApplicableFor] = [ApplicableFor.PARENT]
+    requeriments: ControlRequeriments = ControlRequeriments(
+        all=ApplicableForRequeriments(editable=False),
+        parent=ApplicableForRequeriments(required=True),
+    )
+
+
+class MaskImageControl(MaskControl):
+    title: str = "Mask Image"
+    description: str = "Mask image for generation."
+    tooltip: str = "Use images as masks to guide generation."
+    applicable_for: List[ApplicableFor] = [ApplicableFor.PARENT]
+    requeriments: ControlRequeriments = ControlRequeriments(
+        all=ApplicableForRequeriments(editable=False),
+        parent=ApplicableForRequeriments(required=True),
+    )
 
 
 # class ImagePromptControl(BaseControl):

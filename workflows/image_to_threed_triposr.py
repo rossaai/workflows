@@ -127,9 +127,7 @@ class Workflow(BaseWorkflow):
 
     def run(
         self,
-        controls: List[ControlValue] = ControlsField(
-            options=[InputImageControl(required=True)]
-        ),
+        controls: List[ControlValue] = ControlsField(options=[InputImageControl()]),
         resolution: int = 256,
         remove_background: bool = True,
         foreground_ratio: float = 0.85,
