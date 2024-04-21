@@ -65,7 +65,7 @@ class BaseWorkflow:
             ):
                 for option in default.extra["options"]:
                     if isinstance(option, Option):
-                        options.append(option.dict())
+                        options.append(option.dict(by_alias=True))
 
             fields.append(
                 {
