@@ -4,7 +4,6 @@ from .responses import Notification, Response
 from .image import Image
 from .fields import FieldType, Option
 from abc import abstractmethod
-from .types import ContentType
 from pydantic import validate_arguments
 from pydantic.fields import FieldInfo
 import inspect
