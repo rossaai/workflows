@@ -77,8 +77,6 @@ class BaseWorkflow:
             "title": self.title,
             "version": self.version,
             "description": self.description,
-            "content_type": self.content_type.value,
-            "tooltip": self.tooltip or "",
             "fields": fields,
         }
 
