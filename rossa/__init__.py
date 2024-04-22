@@ -10,12 +10,10 @@ from .fields import (
     MaskImageControl,
     CannyControl,
     PoseControl,
-    PerformanceType,
     BasePerformance,
     InstantPerformance,
     BalancedPerformance,
     QualityPerformance,
-    FieldType,
     BaseField,
     TextField,
     TextAreaField,
@@ -27,8 +25,8 @@ from .fields import (
     NegativePromptField,
     PerformanceField,
     ControlsField,
-    ApplicableForRequeriments,
-    ControlRequeriments,
+    ApplicableForRequirements,
+    ControlRequirements,
 )
 
 from .responses import (
@@ -45,7 +43,8 @@ from .responses import (
     Notification,
 )
 
-from .types import ContentType, ApplicableFor, ControlType
+from .types import ContentType, ApplicableFor, ControlType, FieldType, PerformanceType
+
 
 __all__ = [
     # Fields
@@ -76,8 +75,8 @@ __all__ = [
     "NegativePromptField",
     "PerformanceField",
     "ControlsField",
-    "ApplicableForRequeriments",
-    "ControlRequeriments",
+    "ApplicableForRequirements",
+    "ControlRequirements",
     # Workflow
     "BaseWorkflow",
     # Image

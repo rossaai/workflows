@@ -49,3 +49,22 @@ class ApplicableFor(str, Enum):
     ALL = "all"
     PARENT = "parent"
     CHILD = "child"
+
+
+class PerformanceType(str, Enum):
+    INSTANT = "instant"
+    BALANCED = "balanced"
+    QUALITY = "quality"
+
+
+class FieldType(str, Enum):
+    TEXT = "text"
+    TEXTAREA = "textarea"
+    NUMBER = "number"
+    INTEGER = "integer"
+    CHECKBOX = "checkbox"
+    SELECT = "select"
+    PROMPT = "prompt"
+    NEGATIVE_PROMPT = "negative_prompt"
+    PERFORMANCE = "performance"
+    CONTROLS = "controls"

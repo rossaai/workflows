@@ -1,8 +1,6 @@
 from pydantic import BaseModel, Field as PydanticField
 from typing import List, Literal, Optional, Union
-from enum import Enum
-
-from .types import ApplicableFor, ControlType
+from .types import ApplicableFor, ControlType, FieldType, PerformanceType
 from .utils import url_to_pil_image, url_to_cv2_image
 
 
@@ -38,7 +36,7 @@ class ControlValue(BaseModel):
         return img
 
 
-class ApplicableForRequeriments(BaseModel):
+class ApplicableForRequirements(BaseModel):
     """
     Represents the requirements for a specific applicability level.
 
@@ -47,7 +45,7 @@ class ApplicableForRequeriments(BaseModel):
         editable (bool): Indicates whether the requirement is editable. Default is True.
 
     Examples:
-        >>> reqs = ApplicableForRequeriments(required=True, editable=False)
+        >>> reqs = ApplicableForRequirements(required=True, editable=False)
         >>> print(reqs.required)
         True
         >>> print(reqs.editable)
@@ -58,20 +56,20 @@ class ApplicableForRequeriments(BaseModel):
     editable: bool = True
 
 
-class ControlRequeriments(BaseModel):
+class ControlRequirements(BaseModel):
     """
     Represents the control requirements for different applicability levels.
 
     Attributes:
-        all (Optional[ApplicableForRequeriments]): The requirements applicable for all levels.
-        parent (Optional[ApplicableForRequeriments]): The requirements applicable for the parent level.
-        child (Optional[ApplicableForRequeriments]): The requirements applicable for the child level.
+        all (Optional[ApplicableForRequirements]): The requirements applicable for all levels.
+        parent (Optional[ApplicableForRequirements]): The requirements applicable for the parent level.
+        child (Optional[ApplicableForRequirements]): The requirements applicable for the child level.
 
     Examples:
-        >>> control_reqs = ControlRequeriments(
-        ...     all=ApplicableForRequeriments(required=True),
-        ...     parent=ApplicableForRequeriments(editable=False),
-        ...     child=ApplicableForRequeriments(required=False, editable=True)
+        >>> control_reqs = ControlRequirements(
+        ...     all=ApplicableForRequirements(required=True),
+        ...     parent=ApplicableForRequirements(editable=False),
+        ...     child=ApplicableForRequirements(required=False, editable=True)
         ... )
         >>> print(control_reqs.all.required)
         True
@@ -81,9 +79,9 @@ class ControlRequeriments(BaseModel):
         False
     """
 
-    all: Optional[ApplicableForRequeriments]
-    parent: Optional[ApplicableForRequeriments]
-    child: Optional[ApplicableForRequeriments]
+    all: Optional[ApplicableForRequirements]
+    parent: Optional[ApplicableForRequirements]
+    child: Optional[ApplicableForRequirements]
 
 
 class BaseControl(Option):
@@ -93,7 +91,7 @@ class BaseControl(Option):
         title="Applicable For",
         description="The control is applicable for the following elements.",
     )
-    requeriments: Optional[ControlRequeriments]
+    requirements: Optional[ControlRequirements]
 
 
 class InputControl(BaseControl):
@@ -124,9 +122,9 @@ class InputImageControl(InputControl):
     title: str = "Input Image"
     description: str = "Input image for generation."
     applicable_for: List[ApplicableFor] = [ApplicableFor.PARENT]
-    requeriments: ControlRequeriments = ControlRequeriments(
-        all=ApplicableForRequeriments(editable=False),
-        parent=ApplicableForRequeriments(required=True),
+    requirements: ControlRequirements = ControlRequirements(
+        all=ApplicableForRequirements(editable=False),
+        parent=ApplicableForRequirements(required=True),
     )
 
 
@@ -134,9 +132,9 @@ class MaskImageControl(MaskControl):
     title: str = "Mask Image"
     description: str = "Mask image for generation."
     applicable_for: List[ApplicableFor] = [ApplicableFor.PARENT]
-    requeriments: ControlRequeriments = ControlRequeriments(
-        all=ApplicableForRequeriments(editable=False),
-        parent=ApplicableForRequeriments(required=True),
+    requirements: ControlRequirements = ControlRequirements(
+        all=ApplicableForRequirements(editable=False),
+        parent=ApplicableForRequirements(required=True),
     )
 
 
@@ -153,12 +151,6 @@ class MaskImageControl(MaskControl):
 
 
 # PERFORMANCE
-class PerformanceType(str, Enum):
-    INSTANT = "instant"
-    BALANCED = "balanced"
-    QUALITY = "quality"
-
-
 class BasePerformance(Option):
     value: PerformanceType
 
@@ -185,18 +177,6 @@ class QualityPerformance(BasePerformance):
 
 
 # FIELDS
-class FieldType(str, Enum):
-    TEXT = "text"
-    TEXTAREA = "textarea"
-    NUMBER = "number"
-    INTEGER = "integer"
-    CHECKBOX = "checkbox"
-    SELECT = "select"
-    PROMPT = "prompt"
-    NEGATIVE_PROMPT = "negative_prompt"
-    PERFORMANCE = "performance"
-    CONTROLS = "controls"
-
 
 FieldTypeLiteral = Literal[
     "text",
