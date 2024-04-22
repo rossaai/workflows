@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field as PydanticField
 from typing import List, Literal, Optional, Union
 from enum import Enum
 
-from .types import ApplicableFor
+from .types import ApplicableFor, ControlType
 from .utils import url_to_pil_image, url_to_cv2_image
 
 
@@ -10,20 +10,10 @@ class Option(BaseModel):
     value: str
     title: str
     description: Optional[str] = None
-    tooltip: Optional[str] = None
     default: Optional[bool] = False
 
 
 # CONTROLS
-class ControlType(str, Enum):
-    INPUT = "input"
-    MASK = "mask"
-    CONTROL_CANNY = "control-canny"
-    CONTROL_POSE = "control-pose"
-    CONTROL_STYLE_TRANSFER = "control-style-transfer"
-    CONTROL_FACE_SWAP = "control-face-swap"
-
-
 class ControlValue(BaseModel):
     type: Union[ControlType, str]
     influence: float
@@ -110,34 +100,29 @@ class InputControl(BaseControl):
     value: ControlType = ControlType.INPUT
     title: str = "Input"
     description: str = "Input for generation."
-    tooltip: str = "Use text, images, or videos to guide generation."
 
 
 class MaskControl(BaseControl):
     value: ControlType = ControlType.MASK
     title: str = "Mask"
     description: str = "Mask for generation."
-    tooltip: str = "Use masks to guide generation."
 
 
 class CannyControl(BaseControl):
     value: ControlType = ControlType.CONTROL_CANNY
     title: str = "Edges Control"
     description: str = "Detects edges useful sketch-to-render images."
-    tooltip: str = "Enhances edge detection in high-res images."
 
 
 class PoseControl(BaseControl):
     value: ControlType = ControlType.CONTROL_POSE
     title: str = "Pose"
     description: str = "Incorporates a specific pose into your image generation."
-    tooltip: str = "Incorporate poses into new images."
 
 
 class InputImageControl(InputControl):
     title: str = "Input Image"
     description: str = "Input image for generation."
-    tooltip: str = "Use images to guide generation."
     applicable_for: List[ApplicableFor] = [ApplicableFor.PARENT]
     requeriments: ControlRequeriments = ControlRequeriments(
         all=ApplicableForRequeriments(editable=False),
@@ -148,7 +133,6 @@ class InputImageControl(InputControl):
 class MaskImageControl(MaskControl):
     title: str = "Mask Image"
     description: str = "Mask image for generation."
-    tooltip: str = "Use images as masks to guide generation."
     applicable_for: List[ApplicableFor] = [ApplicableFor.PARENT]
     requeriments: ControlRequeriments = ControlRequeriments(
         all=ApplicableForRequeriments(editable=False),
@@ -160,14 +144,12 @@ class MaskImageControl(MaskControl):
 #     value: ControlType = ControlType.CONTROL_IMAGE_PROMPT
 #     title: str = "Image Prompt"
 #     description: str = "Use an image to guide style, composition, and colors."
-#     tooltip: str = "Combine images and text for nuanced results."
 
 
 # class FaceSwapControl(BaseControl):
 #     value: ControlType = ControlType.CONTROL_FACE_SWAP
 #     title: str = "Face Swap"
 #     description: str = "Incorporates a specific face into your image generation."
-#     tooltip: str = "Incorporate facial features into new images."
 
 
 # PERFORMANCE
@@ -185,7 +167,6 @@ class InstantPerformance(BasePerformance):
     value: PerformanceType = PerformanceType.INSTANT
     title: str = "Instant"
     description: str = "Real-time generation (up to 2 seconds)."
-    tooltip: str = "Extreme speed, instant results."
     default: bool = False
 
 
@@ -193,7 +174,6 @@ class BalancedPerformance(BasePerformance):
     value: PerformanceType = PerformanceType.BALANCED
     title: str = "Balanced"
     description: str = "Efficient speed and quality balance (up to 10 seconds)."
-    tooltip: str = "Ideal balance between speed and quality."
     default: bool = True
 
 
@@ -201,7 +181,6 @@ class QualityPerformance(BasePerformance):
     value: PerformanceType = PerformanceType.QUALITY
     title: str = "Quality"
     description: str = "Maximum quality (up to 20 seconds)."
-    tooltip: str = "For when quality is everything."
     default: bool = False
 
 

@@ -5,7 +5,6 @@ from rossa import (
     ControlsField,
     ControlValue,
     InputImageControl,
-    ContentType,
     ThreeDResponse,
 )
 
@@ -83,11 +82,9 @@ with image.imports():
 
 class Workflow(BaseWorkflow):
     image = image
-    title = "Image-to-3D"
-    version = "TripoSR"
-    description = "Creates a 3D model from provided image."
-    tooltip = "Creates a 3D model using the input image as reference."
-    content_type = ContentType.IMAGE
+    title = "3D Model Generator"
+    version = "TripoSR V1"
+    description = "Transform your images into 3D models"
 
     def download(self):
         TSR.from_pretrained(

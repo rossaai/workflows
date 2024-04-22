@@ -1,6 +1,15 @@
 from enum import Enum
 
 
+class ControlType(str, Enum):
+    INPUT = "input"
+    MASK = "mask"
+    CONTROL_CANNY = "control-canny"
+    CONTROL_POSE = "control-pose"
+    CONTROL_STYLE_TRANSFER = "control-style-transfer"
+    CONTROL_FACE_SWAP = "control-face-swap"
+
+
 class ContentType(str, Enum):
     IMAGE = "image"
     VIDEO = "video"

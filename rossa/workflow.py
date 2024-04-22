@@ -21,8 +21,6 @@ class BaseWorkflow:
     title: str
     version: str
     description: str
-    content_type: ContentType
-    tooltip: Optional[str] = None
 
     class Config:
         arbitrary_types_allowed = True
@@ -32,15 +30,13 @@ class BaseWorkflow:
         cls.run = validate_arguments(cls.run)
 
     def schema(self):
-        # validate title, version, description, content_type, and tooltip
+        # validate title, version, description
         if not isinstance(self.title, str):
             raise ValueError("title must be a string")
         if not isinstance(self.version, str):
             raise ValueError("version must be a string")
         if not isinstance(self.description, str):
             raise ValueError("description must be a string")
-        if not isinstance(self.content_type, ContentType):
-            raise ValueError("content_type must be a ContentType")
 
         fields = []
 

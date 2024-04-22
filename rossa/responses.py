@@ -10,11 +10,14 @@ import io
 import requests
 from fastapi import Response as FastAPIResponse
 
-from .types import ContentType, ProgressNotificationType
+from .types import ContentType, ControlType, ProgressNotificationType
 
 
 class BaseResponse(BaseModel):
     content_type: ContentType
+    control_type: ControlType = Field(
+        default=ControlType.INPUT, description="Optional control type"
+    )
     content: Union[str, bytes] = Field(
         description="Content as str (URL, data URL-base64, or path) or bytes"
     )

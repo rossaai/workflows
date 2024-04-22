@@ -2,7 +2,6 @@ from .image import Image
 from .workflow import BaseWorkflow
 from .fields import (
     Option,
-    ControlType,
     ControlValue,
     BaseControl,
     InputControl,
@@ -46,10 +45,7 @@ from .responses import (
     Notification,
 )
 
-from .types import (
-    ContentType,
-    ApplicableFor,
-)
+from .types import ContentType, ApplicableFor, ControlType
 
 __all__ = [
     # Fields
