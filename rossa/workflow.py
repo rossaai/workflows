@@ -3,7 +3,7 @@ from typing import Any, Dict, Generator, List, Optional, Union
 from .responses import Notification, Response
 from .image import Image
 from .fields import FieldType, Option
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from pydantic import Extra, validate_arguments
 from pydantic.fields import FieldInfo
 import inspect
@@ -15,7 +15,7 @@ ReturnResults = Union[
 ]
 
 
-class BaseWorkflow:
+class BaseWorkflow(ABC):
     image: Optional[Image] = None
     title: str
     version: str
@@ -25,8 +25,13 @@ class BaseWorkflow:
         super().__init_subclass__(**kwargs)
 
         # Get the original signature of the cls.run method
-        original_run = cls.run
-        original_signature = inspect.signature(original_run)
+        cls.original_run = cls.run
+        original_signature = inspect.signature(cls.original_run)
+
+        # Apply the validate_arguments decorator to the original run method
+        validated_run = validate_arguments(
+            cls.original_run, config=dict(extra=Extra.ignore)
+        )
 
         # Ignore extra arguments
         def run_wrapper(self, *args, **kwargs):
@@ -35,9 +40,9 @@ class BaseWorkflow:
                 k: v for k, v in kwargs.items() if k in original_signature.parameters
             }
 
-            return original_run(self, *args, **valid_kwargs)
+            return validated_run(self, *args, **valid_kwargs)
 
-        cls.run = validate_arguments(run_wrapper, config=dict(extra=Extra.ignore))
+        cls.run = run_wrapper
 
     def schema(self):
         # validate title, version, description
@@ -50,7 +55,17 @@ class BaseWorkflow:
 
         fields = []
 
-        for name, param in inspect.signature(self.run).parameters.items():
+        # check if original_run is in the class and if it is a function
+        # else use the run method
+        run_fn = (
+            self.original_run
+            if hasattr(self, "original_run") and callable(self.original_run)
+            else self.run
+        )
+
+        parameters = inspect.signature(run_fn).parameters
+
+        for name, param in parameters.items():
             default = param.default
 
             is_not_valid_field = (
