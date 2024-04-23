@@ -4,7 +4,7 @@ from .responses import Notification, Response
 from .image import Image
 from .fields import FieldType, Option
 from abc import abstractmethod
-from pydantic import validate_arguments
+from pydantic import Extra, validate_arguments
 from pydantic.fields import FieldInfo
 import inspect
 
@@ -21,12 +21,23 @@ class BaseWorkflow:
     version: str
     description: str
 
-    class Config:
-        arbitrary_types_allowed = True
-
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        cls.run = validate_arguments(cls.run)
+
+        # Get the original signature of the cls.run method
+        original_run = cls.run
+        original_signature = inspect.signature(original_run)
+
+        # Ignore extra arguments
+        def run_wrapper(self, *args, **kwargs):
+            # Extract only the arguments present in the original signature
+            valid_kwargs = {
+                k: v for k, v in kwargs.items() if k in original_signature.parameters
+            }
+
+            return original_run(self, *args, **valid_kwargs)
+
+        cls.run = validate_arguments(run_wrapper, config=dict(extra=Extra.ignore))
 
     def schema(self):
         # validate title, version, description
