@@ -1,19 +1,6 @@
 from .image import Image
 from .workflow import BaseWorkflow
 from .fields import (
-    Option,
-    ControlValue,
-    BaseControl,
-    InputControl,
-    InputImageControl,
-    MaskControl,
-    MaskImageControl,
-    CannyControl,
-    PoseControl,
-    BasePerformance,
-    InstantPerformance,
-    BalancedPerformance,
-    QualityPerformance,
     BaseField,
     TextField,
     TextAreaField,
@@ -27,6 +14,32 @@ from .fields import (
     ControlsField,
     ApplicableForRequirements,
     ControlRequirements,
+)
+
+from .controls import (
+    ControlValue,
+    ApplicableForRequirements,
+    ControlRequirements,
+    BaseControl,
+    InputControl,
+    MaskControl,
+    CannyControl,
+    PoseControl,
+    StyleTransferControl,
+    FaceReplacementControl,
+    InputImageControl,
+    MaskImageControl,
+    CannyImageControl,
+    PoseImageControl,
+    ImageStyleTransferControl,
+    ImageFaceReplacementControl,
+)
+
+from .performances import (
+    BasePerformance,
+    InstantPerformance,
+    BalancedPerformance,
+    QualityPerformance,
 )
 
 from .responses import (
@@ -43,26 +56,18 @@ from .responses import (
     Notification,
 )
 
-from .types import ContentType, ApplicableFor, ControlType, FieldType, PerformanceType
+from .types import (
+    ContentType,
+    ApplicableFor,
+    ControlType,
+    FieldType,
+    PerformanceType,
+    Option,
+)
 
 
 __all__ = [
     # Fields
-    "Option",
-    "ControlType",
-    "ControlValue",
-    "BaseControl",
-    "InputControl",
-    "InputImageControl",
-    "MaskControl",
-    "MaskImageControl",
-    "CannyControl",
-    "PoseControl",
-    "PerformanceType",
-    "BasePerformance",
-    "InstantPerformance",
-    "BalancedPerformance",
-    "QualityPerformance",
     "FieldType",
     "BaseField",
     "TextField",
@@ -96,4 +101,29 @@ __all__ = [
     # Types
     "ContentType",
     "ApplicableFor",
+    "Option",
+    "ControlType",
+    # Controls
+    "ControlValue",
+    "ApplicableForRequirements",
+    "ControlRequirements",
+    "BaseControl",
+    "InputControl",
+    "MaskControl",
+    "CannyControl",
+    "PoseControl",
+    "StyleTransferControl",
+    "FaceReplacementControl",
+    "InputImageControl",
+    "MaskImageControl",
+    "CannyImageControl",
+    "PoseImageControl",
+    "ImageStyleTransferControl",
+    "ImageFaceReplacementControl",
+    # Performances
+    "PerformanceType",
+    "BasePerformance",
+    "InstantPerformance",
+    "BalancedPerformance",
+    "QualityPerformance",
 ]

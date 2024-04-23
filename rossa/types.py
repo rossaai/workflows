@@ -1,4 +1,6 @@
 from enum import Enum
+from typing import Optional
+from pydantic import BaseModel
 
 
 class ControlType(str, Enum):
@@ -7,7 +9,7 @@ class ControlType(str, Enum):
     CONTROL_CANNY = "control-canny"
     CONTROL_POSE = "control-pose"
     CONTROL_STYLE_TRANSFER = "control-style-transfer"
-    CONTROL_FACE_SWAP = "control-face-swap"
+    CONTROL_FACE_REPLACEMENT = "control-face-replacement"
 
 
 class ContentType(str, Enum):
@@ -68,3 +70,10 @@ class FieldType(str, Enum):
     NEGATIVE_PROMPT = "negative_prompt"
     PERFORMANCE = "performance"
     CONTROLS = "controls"
+
+
+class Option(BaseModel):
+    value: str
+    title: str
+    description: Optional[str] = None
+    default: Optional[bool] = False
