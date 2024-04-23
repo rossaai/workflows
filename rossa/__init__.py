@@ -12,8 +12,6 @@ from .fields import (
     NegativePromptField,
     PerformanceField,
     ControlsField,
-    ApplicableForRequirements,
-    ControlRequirements,
 )
 
 from .controls import (
