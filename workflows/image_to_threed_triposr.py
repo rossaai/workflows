@@ -6,6 +6,7 @@ from rossa import (
     ControlValue,
     InputImageControl,
     ThreeDResponse,
+    next_control,
 )
 
 # Adapted from: https://github.com/camenduru/TripoSR-replicate/blob/main/cog.yaml
@@ -130,15 +131,9 @@ class Workflow(BaseWorkflow):
         foreground_ratio: float = 0.85,
         format: str = "glb",
     ):
-        input_image: ControlValue = next(
-            filter(lambda control: control.type == InputImageControl().value, controls),
-            None,
-        )
+        image = next_control(controls, InputImageControl())
 
-        if input_image is None:
-            raise Exception("Input control is required")
-
-        image = input_image.to_pil_image()
+        image = image.to_pil_image()
 
         image = preprocess_image(
             image, remove_background, foreground_ratio, self.rembg_session

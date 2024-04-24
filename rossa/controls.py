@@ -1,18 +1,16 @@
 from pydantic import BaseModel, Field as PydanticField
 from typing import List, Optional, Union
-from .types import Option, ApplicableFor, ContentType, ControlType
-from .utils import url_to_pil_image, url_to_cv2_image
+from .types import Content, Option, ApplicableFor, ContentType, ControlType
+from .image_conversion_utils import url_to_pil_image, url_to_cv2_image
 
 
-class ControlValue(BaseModel):
-    content_type: ContentType
-    type: Union[ControlType, str]
+class ControlValue(Content):
     influence: float
-    url: str
+    content: str
 
     def to_pil_image(self):
         """Converts a URL to a PIL image."""
-        img = url_to_pil_image(self.url)
+        img = url_to_pil_image(self.content)
 
         if img is None:
             raise Exception("Invalid image URL. Please provide a valid image URL.")
@@ -21,7 +19,7 @@ class ControlValue(BaseModel):
 
     def to_cv2_image(self):
         "" 'Converts a URL to a cv2 image. Remember to `.apt_install("ffmpeg", "libsm6", "libxext6")` to your `rossa.Image`.' ""
-        img = url_to_cv2_image(self.url)
+        img = url_to_cv2_image(self.content)
 
         if img is None:
             raise Exception("Invalid image URL. Please provide a valid image URL.")

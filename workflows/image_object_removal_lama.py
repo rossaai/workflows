@@ -7,6 +7,7 @@ from rossa import (
     ControlValue,
     MaskImageControl,
     ImageResponse,
+    next_control,
 )
 
 
@@ -39,18 +40,9 @@ class Workflow(BaseWorkflow):
             options=[InputImageControl(), MaskImageControl()]
         ),
     ):
-        mask: ControlValue = next(
-            filter(lambda control: control.type == MaskImageControl().value, controls),
-            None,
-        )
+        mask = next_control(controls, MaskImageControl())
 
-        image: ControlValue = next(
-            filter(lambda control: control.type == InputImageControl().value, controls),
-            None,
-        )
-
-        if mask is None or image is None:
-            raise Exception("Control mask and image are required.")
+        image = next_control(controls, InputImageControl())
 
         mask = mask.to_pil_image()
 

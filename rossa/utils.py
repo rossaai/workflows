@@ -1,40 +1,21 @@
-import base64
-from io import BytesIO
-from PIL import Image
-import requests
+from typing import List
+
+from .exceptions import ControlNotFoundException
+from .controls import BaseControl, ControlValue
 
 
-def url_to_pil_image(url: str):
-    if not isinstance(url, str):
-        return None
+def next_control(controls: List[ControlValue], control: BaseControl):
+    value = next(
+        filter(
+            lambda c: (c.control_type == control.value),
+            controls,
+        ),
+        None,
+    )
 
-    if url.startswith("data:image"):
-        base64_str_index = url.find("base64,") + len("base64,")
-        image_data = base64.b64decode(url[base64_str_index:])
-        image = Image.open(BytesIO(image_data))
-    else:
-        response = requests.get(url)
-        image = Image.open(BytesIO(response.content))
-
-    return image
-
-
-def url_to_cv2_image(url: str):
-    """Converts a URL to a cv2 image. Remember to install cv2 and numpy."""
-    import cv2
-    import numpy as np
-
-    if not isinstance(url, str):
-        return None
-
-    if url.startswith("data:image"):
-        base64_str_index = url.find("base64,") + len("base64,")
-        image_data = base64.b64decode(url[base64_str_index:])
-        image = cv2.imdecode(np.frombuffer(image_data, np.uint8), cv2.IMREAD_COLOR)
-    else:
-        response = requests.get(url)
-        image = cv2.imdecode(
-            np.frombuffer(response.content, np.uint8), cv2.IMREAD_COLOR
+    if value is None:
+        raise ControlNotFoundException(
+            f"{control.title} ({control.value}) control is required. Available controls: {[c.control_type for c in controls]}"
         )
 
-    return image
+    return value

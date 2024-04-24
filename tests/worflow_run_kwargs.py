@@ -5,6 +5,7 @@ from rossa import (
     ControlsField,
     InputImageControl,
     MaskImageControl,
+    next_control,
 )
 
 
@@ -20,7 +21,12 @@ class Workflow(BaseWorkflow):
         assert all(
             isinstance(control, ControlValue) for control in controls
         ), "Controls must be of type ControlValue. Probably validate_arguments is not working."
-        pass
+
+        image = next_control(controls, InputImageControl())
+
+        mask = next_control(controls, MaskImageControl())
+
+        print("Successfully extracted controls from workflow.")
 
 
 workflow = Workflow()
@@ -28,20 +34,20 @@ workflow = Workflow()
 controls = [
     {
         "content_type": "image",
-        "type": "input",
+        "control_type": "input",
         "influence": 1.0,
-        "url": "https://example.com/image.jpg",
+        "content": "https://picsum.photos/200",
     },
     {
         "content_type": "image",
-        "type": "mask",
+        "control_type": "mask",
         "influence": 1.0,
-        "url": "https://example.com/mask.jpg",
+        "content": "https://picsum.photos/200",
     },
 ]
 
 
-# Expect to
 workflow.run(
     controls=controls,
+    prompt="Please provide an input image and a mask.",  # Validate if extra kwargs are allowed
 )

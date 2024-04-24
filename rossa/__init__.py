@@ -54,6 +54,7 @@ from .responses import (
     Notification,
 )
 
+
 from .types import (
     ContentType,
     ApplicableFor,
@@ -61,7 +62,12 @@ from .types import (
     FieldType,
     PerformanceType,
     Option,
+    Content,
 )
+
+from .utils import next_control
+
+from .exceptions import RossaException, ControlNotFoundException
 
 
 __all__ = [
@@ -96,11 +102,6 @@ __all__ = [
     "SuccessNotification",
     "ErrorNotification",
     "Notification",
-    # Types
-    "ContentType",
-    "ApplicableFor",
-    "Option",
-    "ControlType",
     # Controls
     "ControlValue",
     "ApplicableForRequirements",
@@ -124,4 +125,15 @@ __all__ = [
     "InstantPerformance",
     "BalancedPerformance",
     "QualityPerformance",
+    # Types
+    "ContentType",
+    "ApplicableFor",
+    "Option",
+    "ControlType",
+    "Content",
+    # Utils
+    "next_control",
+    # Exceptions
+    "RossaException",
+    "ControlNotFoundException",
 ]

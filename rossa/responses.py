@@ -1,71 +1,20 @@
-import mimetypes
-import os
 from typing import Optional, Union
 from pydantic import BaseModel, Field
 from PIL import Image
 import numpy as np
-import base64
 import io
-
-import requests
 from fastapi import Response as FastAPIResponse
+from .types import Content, ContentType, ControlType, ProgressNotificationType
 
-from .types import ContentType, ControlType, ProgressNotificationType
+
+DEFAULT_IMAGE_FORMAT = "PNG"
+DEFAULT_IMAGE_MIME_TYPE = "image/png"
 
 
-class BaseResponse(BaseModel):
-    content_type: ContentType
+class BaseResponse(Content):
     control_type: ControlType = Field(
         default=ControlType.INPUT, description="Optional control type"
     )
-    content: Union[str, bytes] = Field(
-        description="Content as str (URL, data URL-base64, or path) or bytes"
-    )
-
-    class Config:
-        arbitrary_types_allowed = True
-
-    def to_response(self) -> FastAPIResponse:
-        if isinstance(self.content, str):
-            if self.content.startswith(("http://", "https://")):
-                response = requests.get(self.content)
-                return FastAPIResponse(
-                    content=response.content,
-                    media_type=response.headers["Content-Type"],
-                )
-            elif self.content.startswith("data:"):
-                header, encoded = self.content.split(",", 1)
-                media_type = header.split(":")[1].split(";")[0]
-                content = base64.b64decode(encoded)
-                return FastAPIResponse(content=content, media_type=media_type)
-            else:
-                if os.path.isfile(self.content):
-                    with open(self.content, "rb") as file:
-                        content = file.read()
-                        media_type, _ = mimetypes.guess_type(self.content)
-                        return FastAPIResponse(content=content, media_type=media_type)
-                else:
-                    raise ValueError(f"File not found: {self.content}")
-        elif isinstance(self.content, bytes):
-            return FastAPIResponse(
-                content=self.content, media_type=self.content_type.value
-            )
-
-    def save(self, file_path: str):
-        with open(file_path, "wb") as file:
-            if isinstance(self.content, str):
-                if self.content.startswith(("http://", "https://")):
-                    response = requests.get(self.content)
-                    file.write(response.content)
-                elif self.content.startswith("data:"):
-                    header, encoded = self.content.split(",", 1)
-                    content = base64.b64decode(encoded)
-                    file.write(content)
-                else:
-                    with open(self.content, "rb") as src_file:
-                        file.write(src_file.read())
-            elif isinstance(self.content, bytes):
-                file.write(self.content)
 
 
 class ImageResponse(BaseResponse):
@@ -78,20 +27,30 @@ class ImageResponse(BaseResponse):
         if isinstance(self.content, (Image.Image, np.ndarray)):
             buffered = io.BytesIO()
             if isinstance(self.content, Image.Image):
-                self.content.save(buffered, format="PNG")
+                self.content.save(buffered, format=DEFAULT_IMAGE_FORMAT)
             else:
-                Image.fromarray(self.content).save(buffered, format="PNG")
+                Image.fromarray(self.content).save(
+                    buffered, format=DEFAULT_IMAGE_FORMAT
+                )
             content = buffered.getvalue()
-            return FastAPIResponse(content=content, media_type=self.content_type.value)
+            return FastAPIResponse(content=content, media_type=DEFAULT_IMAGE_MIME_TYPE)
         else:
             return super().to_response()
 
     def save(self, file_path: str):
         if isinstance(self.content, (Image.Image, np.ndarray)):
+            img = None
+
             if isinstance(self.content, Image.Image):
-                self.content.save(file_path)
+                img = self.content
             else:
-                Image.fromarray(self.content).save(file_path)
+                img = Image.fromarray(self.content)
+
+            try:
+                img.save(file_path)
+            except Exception as e:
+                if "unknown file extension" in str(e):
+                    img.save(file_path, format=DEFAULT_IMAGE_FORMAT)
         else:
             super().save(file_path)
 
