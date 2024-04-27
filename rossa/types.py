@@ -127,27 +127,31 @@ class Content(BaseModel):
                     response = requests.get(self.content)
                     file.write(response.content)
                 elif self.content.startswith("data:"):
-                    file_name, file_extension = os.path.splitext(file_path)
-
                     header, encoded = self.content.split(",", 1)
                     content = base64.b64decode(encoded)
 
-                    # Extract the MIME type from the header
-                    mime_type = header.split(":")[1].split(";")[0]
+                    file.write(content)
+                    # file_name, file_extension = os.path.splitext(file_path)
 
-                    # Get the file extension based on the MIME type
-                    extension = mimetypes.guess_extension(mime_type)
+                    # header, encoded = self.content.split(",", 1)
+                    # content = base64.b64decode(encoded)
 
-                    if extension and extension != file_extension:
-                        # Create a new file path with the correct extension
-                        new_file_path = file_name + extension
+                    # # Extract the MIME type from the header
+                    # mime_type = header.split(":")[1].split(";")[0]
 
-                        # Save the content to the new file path
-                        with open(new_file_path, "wb") as new_file:
-                            new_file.write(content)
-                    else:
-                        # Save the content to the original file path
-                        file.write(content)
+                    # # Get the file extension based on the MIME type
+                    # extension = mimetypes.guess_extension(mime_type)
+
+                    # if extension and extension != file_extension:
+                    #     # Create a new file path with the correct extension
+                    #     new_file_path = file_name + extension
+
+                    #     # Save the content to the new file path
+                    #     with open(new_file_path, "wb") as new_file:
+                    #         new_file.write(content)
+                    # else:
+                    #     # Save the content to the original file path
+                    #     file.write(content)
                 else:
                     with open(self.content, "rb") as src_file:
                         file.write(src_file.read())
