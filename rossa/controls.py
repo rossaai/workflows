@@ -127,11 +127,7 @@ class InputImageControl(InputControl):
     title: str = "Source Image"
     description: str = "Provide an input image for Image generation."
     content_type: ContentType = ContentType.IMAGE
-    applicable_for: List[ApplicableFor] = [ApplicableFor.PARENT]
-    requirements: ControlRequirements = ControlRequirements(
-        all=ApplicableForRequirements(editable=False),
-        parent=ApplicableForRequirements(required=True),
-    )
+    applicable_for: List[ApplicableFor] = [ApplicableFor.ALL]
 
 
 class MaskImageControl(MaskControl):
@@ -139,10 +135,6 @@ class MaskImageControl(MaskControl):
     description: str = "Define areas to be modified for Image generation."
     content_type: ContentType = ContentType.IMAGE
     applicable_for: List[ApplicableFor] = [ApplicableFor.ALL]
-    requirements: ControlRequirements = ControlRequirements(
-        all=ApplicableForRequirements(editable=False),
-        parent=ApplicableForRequirements(required=True),
-    )
 
 
 class CannyImageControl(CannyControl):

@@ -1,6 +1,9 @@
 from typing import List
 from rossa import (
+    ApplicableFor,
+    ApplicableForRequirements,
     BaseWorkflow,
+    ControlRequirements,
     ControlsField,
     Image,
     InputImageControl,
@@ -37,7 +40,22 @@ class Workflow(BaseWorkflow):
     def run(
         self,
         controls: List[ControlValue] = ControlsField(
-            options=[InputImageControl(), MaskImageControl()]
+            options=[
+                InputImageControl(
+                    applicable_for=[ApplicableFor.PARENT],
+                    requirements=ControlRequirements(
+                        all=ApplicableForRequirements(editable=False),
+                        parent=ApplicableForRequirements(required=True),
+                    ),
+                ),
+                MaskImageControl(
+                    applicable_for=[ApplicableFor.ALL],
+                    requirements=ControlRequirements(
+                        all=ApplicableForRequirements(editable=False),
+                        parent=ApplicableForRequirements(required=True),
+                    ),
+                ),
+            ]
         ),
     ):
         mask = next_control(controls, MaskImageControl())
