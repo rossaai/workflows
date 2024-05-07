@@ -138,7 +138,7 @@ class MaskImageControl(MaskControl):
     title: str = "Mask"
     description: str = "Define areas to be modified for Image generation."
     content_type: ContentType = ContentType.IMAGE
-    applicable_for: List[ApplicableFor] = [ApplicableFor.PARENT]
+    applicable_for: List[ApplicableFor] = [ApplicableFor.ALL]
     requirements: ControlRequirements = ControlRequirements(
         all=ApplicableForRequirements(editable=False),
         parent=ApplicableForRequirements(required=True),
