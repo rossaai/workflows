@@ -122,33 +122,29 @@ class FaceReplacementControl(BaseControl):
     description: str = "Replaces faces in your generation."
 
 
-# Image controls
+# IMAGE CONTROLS
 class InputImageControl(InputControl):
     title: str = "Source Image"
     description: str = "Provide an input image for Image generation."
     content_type: ContentType = ContentType.IMAGE
-    applicable_for: List[ApplicableFor] = [ApplicableFor.ALL]
 
 
 class MaskImageControl(MaskControl):
     title: str = "Mask"
     description: str = "Define areas to be modified for Image generation."
     content_type: ContentType = ContentType.IMAGE
-    applicable_for: List[ApplicableFor] = [ApplicableFor.ALL]
 
 
 class CannyImageControl(CannyControl):
     title: str = "Edge Detection"
     description: str = "Emphasize edges for sketch-to-image generation."
     content_type: ContentType = ContentType.IMAGE
-    applicable_for: List[ApplicableFor] = [ApplicableFor.ALL]
 
 
 class PoseImageControl(PoseControl):
     title: str = "Pose Guide"
     description: str = "Specify a pose to be incorporated into the generated image."
     content_type: ContentType = ContentType.IMAGE
-    applicable_for: List[ApplicableFor] = [ApplicableFor.ALL]
 
 
 class ImageStyleTransferControl(StyleTransferControl):
@@ -156,10 +152,10 @@ class ImageStyleTransferControl(StyleTransferControl):
     description: str = (
         "Use an image to influence the style, composition, and colors of the generated result."
     )
-    applicable_for: List[ApplicableFor] = [ApplicableFor.ALL]
+    content_type: ContentType = ContentType.IMAGE
 
 
 class ImageFaceReplacementControl(FaceReplacementControl):
     title: str = "Face Replacement"
     description: str = "Replace faces in the generated image."
-    applicable_for: List[ApplicableFor] = [ApplicableFor.ALL]
+    content_type: ContentType = ContentType.IMAGE
