@@ -58,13 +58,13 @@ class Workflow(BaseWorkflow):
             ]
         ),
     ):
-        mask = next_control(controls, MaskImageControl())
-
         image = next_control(controls, InputImageControl())
 
-        mask = mask.to_pil_image()
+        mask = next_control(controls, MaskImageControl())
 
-        image = image.to_pil_image()
+        image = image.to_pil_image().convert("RGB")
+
+        mask = mask.to_pil_image().convert("L")
 
         result = self.simple_lama(image, mask)
 
