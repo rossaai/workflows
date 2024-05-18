@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, Generator, List, Optional, Union
 
 from .responses import Notification, Response
@@ -7,6 +8,24 @@ from abc import ABC, abstractmethod
 from pydantic import Extra, validate_arguments
 from pydantic.fields import FieldInfo
 import inspect
+import re
+from typing import Optional
+
+
+def clean_and_format_string(input_str: str) -> Optional[str]:
+    # Replace spaces with hyphens
+    input_str = input_str.replace(" ", "-")
+
+    # Convert the string to lowercase
+    input_str = input_str.lower()
+
+    # Remove all characters that are not alphanumeric, hyphens, or underscores
+    cleaned_str = re.sub(r"[^a-z0-9-_]", "", input_str)
+
+    # Clamp the string to a maximum length of 64 characters
+    clamped_str = cleaned_str[:64]
+
+    return clamped_str
 
 
 ReturnResults = Union[
@@ -175,7 +194,9 @@ class BaseWorkflow(ABC):
         """
 
         # It uses the class name as the default stub name instead of `self.schema()["title"]` due to Modal naming constraints.
-        modal_stub_name = modal_stub_name or self.__class__.__name__[:64]
+        modal_stub_name = modal_stub_name or clean_and_format_string(
+            self.schema()["title"]
+        )
         dockerfile_path = dockerfile_path or "Dockerfile"
 
         if self.image:
@@ -259,6 +280,47 @@ workflow_instance = {self.__class__.__name__}()\n"""
             yield result
 """
 
+        local_examples = ""
+
+        if self.examples and isinstance(self.examples, list):
+            formatted_examples = [
+                {
+                    **example,
+                    "title": clean_and_format_string(example["title"]),
+                }
+                for example in self.examples
+            ]
+
+            local_examples = f"""
+import os
+import uuid
+from rossa import Response, Notification
+import tempfile
+
+@stub.local_entrypoint()
+def run_modal_workflow():
+    examples = {json.dumps(formatted_examples)}
+    
+    folder = tempfile.mkdtemp()
+    
+    for example in examples:
+        folder_path = os.path.join(folder, example["title"])
+        os.makedirs(folder_path, exist_ok=True)
+        
+        results = ModalWorkflow.run.remote_gen(**example["data"])
+
+        for result in results:
+            if isinstance(result, Response):
+                file_name = uuid.uuid4().hex
+                path = os.path.join(folder_path, file_name)
+                path = os.path.abspath(path)
+                result.save(path)
+                print("Saved (" + result.content_type + "): " + path)
+            elif isinstance(result, Notification):
+                print(result.dict())
+
+"""
+
         deployment_code = f"""{class_code}
 {modal_import}
 
@@ -269,6 +331,7 @@ class ModalWorkflow:
 {download_method}
 {load_method}
 {run_method}
+{local_examples}
 """
 
         if return_code_and_dockerfile:
