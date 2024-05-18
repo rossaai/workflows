@@ -1,9 +1,6 @@
 from typing import List
 from rossa import (
-    ApplicableFor,
-    ApplicableForRequirements,
     BaseWorkflow,
-    ControlRequirements,
     ControlsField,
     Image,
     InputImageControl,
@@ -31,6 +28,29 @@ class Workflow(BaseWorkflow):
     version = "Lama V1"
     description = "Easily erase unwanted objects or people from your photos."
 
+    examples = [
+        {
+            "title": "Remove Bench from Photo",
+            "description": "This example shows how to remove a bench from a scene.",
+            "data": {
+                "controls": [
+                    {
+                        "content_type": "image",
+                        "control_type": "input",
+                        "influence": 1.0,
+                        "content": "https://raw.githubusercontent.com/rossaai/workflows/main/assets/images/chair.png",
+                    },
+                    {
+                        "content_type": "image",
+                        "control_type": "mask",
+                        "influence": 1.0,
+                        "content": "https://raw.githubusercontent.com/rossaai/workflows/main/assets/images/chair_mask.png",
+                    },
+                ],
+            },
+        },
+    ]
+
     def download(self):
         self.simple_lama = SimpleLama()
 
@@ -41,20 +61,8 @@ class Workflow(BaseWorkflow):
         self,
         controls: List[ControlValue] = ControlsField(
             options=[
-                InputImageControl(
-                    applicable_for=[ApplicableFor.PARENT],
-                    requirements=ControlRequirements(
-                        all=ApplicableForRequirements(editable=False),
-                        parent=ApplicableForRequirements(required=True),
-                    ),
-                ),
-                MaskImageControl(
-                    applicable_for=[ApplicableFor.ALL],
-                    requirements=ControlRequirements(
-                        all=ApplicableForRequirements(editable=False),
-                        parent=ApplicableForRequirements(required=True),
-                    ),
-                ),
+                InputImageControl(),
+                MaskImageControl(),
             ]
         ),
     ):
