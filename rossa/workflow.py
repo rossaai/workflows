@@ -88,12 +88,25 @@ class BaseWorkflow(ABC):
         for name, param in parameters.items():
             default = param.default
 
-            is_not_valid_field = (
-                default == inspect.Parameter.empty
-                or not isinstance(default, FieldInfo)
-                or "type" not in default.extra
-                and default.extra["type"] not in set(FieldType)
+            is_not_valid_field = default == inspect.Parameter.empty or not isinstance(
+                default, FieldInfo
             )
+
+            if is_not_valid_field:
+                continue
+
+            extra = (
+                default.extra
+                if hasattr(default, "extra")
+                else (
+                    default.json_schema_extra
+                    if hasattr(default, "json_schema_extra")
+                    else {}
+                )
+            )
+            is_not_valid_field = "type" not in default.extra and default.extra[
+                "type"
+            ] not in set(FieldType)
 
             if is_not_valid_field:
                 continue
@@ -123,6 +136,7 @@ class BaseWorkflow(ABC):
             "version": self.version,
             "description": self.description,
             "fields": fields,
+            "examples": self.examples if isinstance(self.examples, list) else [],
         }
 
         return new_schema
@@ -269,7 +283,7 @@ workflow_instance = {self.__class__.__name__}()\n"""
 """
 
         run_method = """
-    @modal.method()
+    @modal.method(is_generator=True)
     def run(self, *args, **kwargs):
         result = workflow_instance.run(*args, **kwargs)
 
@@ -282,7 +296,7 @@ workflow_instance = {self.__class__.__name__}()\n"""
 
         local_examples = ""
 
-        if self.examples and isinstance(self.examples, list):
+        if isinstance(self.examples, list):
             formatted_examples = [
                 {
                     **example,
