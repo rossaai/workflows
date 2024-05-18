@@ -68,16 +68,9 @@ def create_modal_file(
             {"path": code_path, "content": code["code"], "primary": True},
         ]
 
-        old_dir = os.getcwd()
-        temp_dir = tempfile.mkdtemp()
-
-        os.chdir(temp_dir)
-
         for file in files:
             with open(file["path"], "w") as f:
                 f.write(file["content"])
-
-        os.chdir(old_dir)
 
         primary_file = next(file for file in files if file.get("primary", False))
 
