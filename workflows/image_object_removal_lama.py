@@ -7,7 +7,6 @@ from rossa import (
     Image,
     InputImageControl,
     ControlValue,
-    MaskImageControl,
     ImageResponse,
     next_control,
 )
@@ -65,12 +64,9 @@ class Workflow(BaseWorkflow):
             options=[
                 InputImageControl(
                     requirements=ControlRequirements(
-                        all=ApplicableForRequirements(required=True),
-                    ),
-                ),
-                MaskImageControl(
-                    requirements=ControlRequirements(
-                        all=ApplicableForRequirements(required=True),
+                        all=ApplicableForRequirements(
+                            required=True,
+                        ),
                     ),
                 ),
             ]
@@ -78,9 +74,9 @@ class Workflow(BaseWorkflow):
     ):
         image = next_control(controls, InputImageControl())
 
-        mask = next_control(controls, MaskImageControl())
-
         image = image.to_pil_image().convert("RGB")
+
+        mask = image.mask_to_pil_image()
 
         mask = mask.to_pil_image().convert("L")
 
