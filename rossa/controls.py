@@ -7,6 +7,11 @@ from .image_conversion_utils import url_to_pil_image, url_to_cv2_image
 class ControlValue(Content):
     influence: float
     content: str
+    mask: Optional[str] = None
+
+    def has_mask(self):
+        """Checks if the control has a mask."""
+        return self.mask is not None
 
     def to_pil_image(self):
         """Converts a URL to a PIL image."""
@@ -18,8 +23,32 @@ class ControlValue(Content):
         return img
 
     def to_cv2_image(self):
-        "" 'Converts a URL to a cv2 image. Remember to `.apt_install("ffmpeg", "libsm6", "libxext6")` to your `rossa.Image`.' ""
+        """Converts a URL to a cv2 image. Remember to `.apt_install("ffmpeg", "libsm6", "libxext6")` to your `rossa.Image`."""
         img = url_to_cv2_image(self.content)
+
+        if img is None:
+            raise Exception("Invalid image URL. Please provide a valid image URL.")
+
+        return img
+
+    def mask_to_pil_image(self):
+        """Converts a URL to a PIL image."""
+        if not self.has_mask():
+            raise Exception("Mask URL is not provided.")
+
+        img = url_to_pil_image(self.mask)
+
+        if img is None:
+            raise Exception("Invalid image URL. Please provide a valid image URL.")
+
+        return img
+
+    def mask_to_cv2_image(self):
+        """Converts a URL to a cv2 image. Remember to `.apt_install("ffmpeg", "libsm6", "libxext6")` to your `rossa.Image`."""
+        if not self.has_mask():
+            raise Exception("Mask URL is not provided.")
+
+        img = url_to_cv2_image(self.mask)
 
         if img is None:
             raise Exception("Invalid image URL. Please provide a valid image URL.")
@@ -104,6 +133,14 @@ class CannyControl(BaseControl):
     description: str = "Detects edges useful sketch-to-render images."
 
 
+class LineArtControl(BaseControl):
+    value: ControlType = ControlType.CONTROL_LINE_ART
+    title: str = "Line Art"
+    description: str = (
+        "Incorporates line art into your generation. Useful for sketch-to-image tasks."
+    )
+
+
 class PoseControl(BaseControl):
     value: ControlType = ControlType.CONTROL_POSE
     title: str = "Pose Guide"
@@ -114,6 +151,12 @@ class StyleTransferControl(BaseControl):
     value: ControlType = ControlType.CONTROL_STYLE_TRANSFER
     title: str = "Style Transfer"
     description: str = "Incorporates style into your generation."
+
+
+class CompositionTransferControl(BaseControl):
+    value: ControlType = ControlType.CONTROL_COMPOSITION_TRANSFER
+    title: str = "Composition Transfer"
+    description: str = "Incorporates composition into your generation."
 
 
 class FaceReplacementControl(BaseControl):
@@ -135,6 +178,14 @@ class MaskImageControl(MaskControl):
     content_type: ContentType = ContentType.IMAGE
 
 
+class LineArtImageControl(LineArtControl):
+    title: str = "Line Art"
+    description: str = (
+        "Emphasize lines for constraining the generated image. Useful for sketch-to-image generation."
+    )
+    content_type: ContentType = ContentType.IMAGE
+
+
 class CannyImageControl(CannyControl):
     title: str = "Edge Detection"
     description: str = "Emphasize edges for sketch-to-image generation."
@@ -147,7 +198,7 @@ class PoseImageControl(PoseControl):
     content_type: ContentType = ContentType.IMAGE
 
 
-class ImageStyleTransferControl(StyleTransferControl):
+class StyleTransferImageControl(StyleTransferControl):
     title: str = "Style Image"
     description: str = (
         "Use an image to influence the style, composition, and colors of the generated result."
@@ -155,7 +206,13 @@ class ImageStyleTransferControl(StyleTransferControl):
     content_type: ContentType = ContentType.IMAGE
 
 
-class ImageFaceReplacementControl(FaceReplacementControl):
+class CompositionTransferImageControl(CompositionTransferControl):
+    title: str = "Composition Transfer"
+    description: str = "Incorporate composition into the generated image."
+    content_type: ContentType = ContentType.IMAGE
+
+
+class FaceReplacementImageControl(FaceReplacementControl):
     title: str = "Face Replacement"
     description: str = "Replace faces in the generated image."
     content_type: ContentType = ContentType.IMAGE
