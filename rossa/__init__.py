@@ -5,6 +5,7 @@ from .fields import (
     TextField,
     TextAreaField,
     NumberField,
+    IntegerField,
     SliderField,
     PercentageSliderField,
     CheckboxField,
@@ -39,6 +40,8 @@ from .controls import (
     StyleTransferImageControl,
     CompositionTransferImageControl,
     FaceReplacementImageControl,
+    TransparentBackgroundControl,
+    TransparentBackgroundImageControl,
 )
 
 from .performances import (
@@ -69,6 +72,7 @@ from .types import (
     ControlType,
     FieldType,
     PerformanceType,
+    GeneratorType,
     Option,
     Content,
 )
@@ -85,6 +89,7 @@ __all__ = [
     "TextField",
     "TextAreaField",
     "NumberField",
+    "IntegerField",
     "SliderField",
     "PercentageSliderField",
     "CheckboxField",
@@ -132,6 +137,8 @@ __all__ = [
     "StyleTransferImageControl",
     "CompositionTransferImageControl",
     "FaceReplacementImageControl",
+    "TransparentBackgroundControl",
+    "TransparentBackgroundImageControl",
     # Performances
     "PerformanceType",
     "BasePerformance",
@@ -142,6 +149,7 @@ __all__ = [
     "ContentType",
     "ApplicableElement",
     "Option",
+    "GeneratorType",
     "ControlType",
     "Content",
     # Utils

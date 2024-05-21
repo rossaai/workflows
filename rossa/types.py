@@ -17,6 +17,7 @@ class ControlType(str, Enum):
     CONTROL_STYLE_TRANSFER = "control-style-transfer"
     CONTROL_COMPOSITION_TRANSFER = "control-composition-transfer"
     CONTROL_FACE_REPLACEMENT = "control-face-replacement"
+    CONTROL_TRANSPARENT_BACKGROUND = "control-transparent-background"
 
 
 class ContentType(str, Enum):
@@ -85,6 +86,11 @@ class FormatType(str, Enum):
     SCALE = "scale"
     DECIMAL = "decimal"
     INTEGER = "integer"
+
+
+class GeneratorType(str, Enum):
+    RANDOM_INTEGER = "random_integer"
+    RANDOM_DECIMAL = "random_decimal"
 
 
 class Option(BaseModel):

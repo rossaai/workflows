@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field as PydanticField
-from typing import List, Optional, Union
+from pydantic import BaseModel, Field as PydanticField, root_validator
+from typing import Any, Dict, List, Optional, Union
 
 from fields import BaseField
 from .types import Content, Option, ApplicableElement, ContentType, ControlType
@@ -10,6 +10,15 @@ class ControlValue(Content):
     influence: float
     content: str
     mask: Optional[str] = None
+
+    advanced_fields: Optional[Dict[str, Any]] = None
+
+    def get_advanced_field(self, field_name: str, default: Any = None):
+        """Gets an advanced field by name."""
+        if self.advanced_fields is None:
+            return default
+
+        return self.advanced_fields.get(field_name, default)
 
     def has_mask(self):
         """Checks if the control has a mask."""
@@ -132,6 +141,16 @@ class BaseControl(Option):
     requirements: Optional[ApplicabilityControlRequirements] = None
     advanced_fields: Optional[List[BaseField]] = None
 
+    @root_validator(pre=True)
+    def validate_every_advanced_field_has_alias(cls, values):
+        """Validates that every advanced field has an alias."""
+        if "advanced_fields" in values and values["advanced_fields"] is not None:
+            for field in values["advanced_fields"]:
+                if not hasattr(field, "alias") or field.alias is None:
+                    raise Exception(f"Advanced field {field} must have an alias.")
+
+        return values
+
 
 class InputControl(BaseControl):
     value: ControlType = ControlType.INPUT
@@ -181,6 +200,12 @@ class FaceReplacementControl(BaseControl):
     value: ControlType = ControlType.CONTROL_FACE_REPLACEMENT
     title: str = "Face Replacement"
     description: str = "Replaces faces in your generation."
+
+
+class TransparentBackgroundControl(BaseControl):
+    value: ControlType = ControlType.CONTROL_TRANSPARENT_BACKGROUND
+    title: str = "Transparent Background"
+    description: str = "When generating it keeps the background transparent"
 
 
 # IMAGE CONTROLS
@@ -233,4 +258,10 @@ class CompositionTransferImageControl(CompositionTransferControl):
 class FaceReplacementImageControl(FaceReplacementControl):
     title: str = "Face Replacement"
     description: str = "Replace faces in the generated image."
+    content_type: ContentType = ContentType.IMAGE
+
+
+class TransparentBackgroundImageControl(TransparentBackgroundControl):
+    title: str = "Transparent Background"
+    description: str = "When generating it keeps the background transparent"
     content_type: ContentType = ContentType.IMAGE

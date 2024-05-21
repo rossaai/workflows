@@ -1,6 +1,6 @@
 from pydantic import Field as PydanticField
-from typing import List, Literal, Optional
-from .types import FormatType, Option, FieldType
+from typing import Any, List, Literal, Optional
+from .types import FormatType, GeneratorType, Option, FieldType
 
 
 FieldTypeLiteral = Literal[
@@ -39,6 +39,9 @@ def BaseField(
 
     if type == FieldType.CONTROLS and not options:
         raise Exception("Controls fields must have options.")
+
+    if "default" in kwargs and "default_generator_type" in kwargs:
+        raise Exception("Field cannot have both default and default_generator_type.")
 
     # validate if type is in FieldType
     if type not in set(FieldType):
@@ -93,6 +96,7 @@ def NumberField(
     max: Optional[float] = None,
     step: Optional[float] = None,
     format_type: FormatType = FormatType.DECIMAL,
+    default_generator_type: Optional[GeneratorType] = None,
     **kwargs,
 ):
     return BaseField(
@@ -104,6 +108,35 @@ def NumberField(
         le=max,
         step=step,
         format_type=format_type,
+        default_generator_type=default_generator_type,
+        **kwargs,
+    )
+
+
+def IntegerField(
+    title: str,
+    description: str,
+    placeholder: str = "",
+    step: int = 1,
+    default: Optional[int] = None,
+    min: Optional[int] = None,
+    max: Optional[int] = None,
+    default_generator_type: Optional[GeneratorType] = None,
+    **kwargs,
+):
+    step = int(step)
+
+    return BaseField(
+        type=FieldType.NUMBER.value,
+        title=title,
+        description=description,
+        placeholder=placeholder,
+        ge=min,
+        le=max,
+        step=step,
+        format_type=FormatType.INTEGER,
+        default_generator_type=default_generator_type,
+        default=default,
         **kwargs,
     )
 
