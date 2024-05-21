@@ -24,6 +24,7 @@ def BaseField(
     alias: str = None,
     placeholder: str = "",
     options: Optional[List[Option]] = None,
+    default_generator_type: Optional[GeneratorType] = None,
     **kwargs,
 ):
     if options:
@@ -40,14 +41,22 @@ def BaseField(
     if type == FieldType.CONTROLS and not options:
         raise Exception("Controls fields must have options.")
 
-    if "default" in kwargs and "default_generator_type" in kwargs:
+    if "default" in kwargs and default_generator_type:
         raise Exception("Field cannot have both default and default_generator_type.")
+
+    if not isinstance(default_generator_type, GeneratorType):
+        raise Exception("default_generator_type must be a GeneratorType.")
 
     # validate if type is in FieldType
     if type not in set(FieldType):
         raise Exception("Field type must be in FieldType.")
 
     return PydanticField(
+        default_factory=(
+            default_generator_type.generate(kwargs.get("ge"), kwargs.get("le"))
+            if default_generator_type
+            else None
+        ),
         title=title,
         type=type,
         alias=alias,
@@ -201,6 +210,7 @@ def CheckboxField(
     title: str,
     description: str,
     placeholder: str = "",
+    default: bool = False,
     **kwargs,
 ):
     return BaseField(
@@ -208,7 +218,7 @@ def CheckboxField(
         title=title,
         description=description,
         placeholder=placeholder,
-        default=False,
+        default=default,
         **kwargs,
     )
 

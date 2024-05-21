@@ -6,6 +6,8 @@ from typing import Optional, Union
 from pydantic import BaseModel, Field
 import requests
 from fastapi import Response as FastAPIResponse
+import random
+from .constants import MAX_SAFE_DECIMAL, MAX_SAFE_INTEGER
 
 
 class ControlType(str, Enum):
@@ -91,6 +93,14 @@ class FormatType(str, Enum):
 class GeneratorType(str, Enum):
     RANDOM_INTEGER = "random_integer"
     RANDOM_DECIMAL = "random_decimal"
+
+    def generate(self, ge: Optional[float] = None, le: Optional[float] = None):
+        if self == GeneratorType.RANDOM_INTEGER:
+            return random.randint(ge or 0, le or MAX_SAFE_INTEGER)
+        elif self == GeneratorType.RANDOM_DECIMAL:
+            return random.randint(
+                ge or 0.0, le or MAX_SAFE_DECIMAL
+            )  # Adjust range as needed
 
 
 class Option(BaseModel):
