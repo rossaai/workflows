@@ -33,7 +33,7 @@ class ProgressNotificationType(str, Enum):
     SUCCESS = "success"
 
 
-class ApplicableFor(str, Enum):
+class ApplicableElement(str, Enum):
     """
     An enumeration representing the applicability of a requirement.
 
@@ -70,6 +70,7 @@ class FieldType(str, Enum):
     TEXT = "text"
     TEXTAREA = "textarea"
     NUMBER = "number"
+    SLIDER = "slider"
     INTEGER = "integer"
     CHECKBOX = "checkbox"
     SELECT = "select"
@@ -77,6 +78,13 @@ class FieldType(str, Enum):
     NEGATIVE_PROMPT = "negative_prompt"
     PERFORMANCE = "performance"
     CONTROLS = "controls"
+
+
+class FormatType(str, Enum):
+    PERCENTAGE = "percentage"
+    SCALE = "scale"
+    DECIMAL = "decimal"
+    INTEGER = "integer"
 
 
 class Option(BaseModel):

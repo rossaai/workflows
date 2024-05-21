@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field as PydanticField
 from typing import List, Optional, Union
-from .types import Content, Option, ApplicableFor, ContentType, ControlType
+
+from fields import BaseField
+from .types import Content, Option, ApplicableElement, ContentType, ControlType
 from .image_conversion_utils import url_to_pil_image, url_to_cv2_image
 
 
@@ -56,63 +58,79 @@ class ControlValue(Content):
         return img
 
 
-class ApplicableForRequirements(BaseModel):
+class RequirementApplicability(BaseModel):
     """
-    Represents the requirements for a specific applicability level.
+    Represents the applicability of specific requirements.
 
     Attributes:
-        required (bool): Indicates whether the requirement is mandatory. Default is False.
-        editable (bool): Indicates whether the requirement is editable. Default is True.
+        is_required (bool): Indicates whether the requirement is mandatory. Default is False.
+        supports_influence (bool): Indicates whether the requirement supports influence. Default is True.
+        supports_mask (bool): Indicates whether the requirement supports masking. Default is False.
+        requires_mask (bool): Indicates whether the requirement requires masking. Default is False.
 
     Examples:
-        >>> reqs = ApplicableForRequirements(required=True, editable=False)
-        >>> print(reqs.required)
+        >>> reqs = RequirementApplicability(is_required=True, is_editable=False)
+        >>> print(reqs.is_required)
         True
-        >>> print(reqs.editable)
+        >>> print(reqs.is_editable)
         False
     """
 
-    required: bool = False
-    editable: bool = True
+    is_required: bool = False
+    supports_influence: bool = True
+    supports_mask: bool = False
+    requires_mask: bool = False
 
 
-class ControlRequirements(BaseModel):
+class ApplicabilityControlRequirements(BaseModel):
     """
     Represents the control requirements for different applicability levels.
 
     Attributes:
-        all (Optional[ApplicableForRequirements]): The requirements applicable for all levels.
-        parent (Optional[ApplicableForRequirements]): The requirements applicable for the parent level.
-        child (Optional[ApplicableForRequirements]): The requirements applicable for the child level.
+        all_levels (Optional[RequirementApplicability]): The requirements applicable for all levels.
+        parent_level (Optional[RequirementApplicability]): The requirements applicable for the parent level.
+        child_level (Optional[RequirementApplicability]): The requirements applicable for the child level.
 
     Examples:
-        >>> control_reqs = ControlRequirements(
-        ...     all=ApplicableForRequirements(required=True),
-        ...     parent=ApplicableForRequirements(editable=False),
-        ...     child=ApplicableForRequirements(required=False, editable=True)
+        >>> control_reqs = ApplicabilityApplicabilityControlRequirements(
+        ...     all_levels=RequirementApplicability(is_required=True),
+        ...     parent_level=RequirementApplicability(is_editable=False),
+        ...     child_level=RequirementApplicability(is_required=False, is_editable=True)
         ... )
-        >>> print(control_reqs.all.required)
+        >>> print(control_reqs.all_levels.is_required)
         True
-        >>> print(control_reqs.parent.editable)
+        >>> print(control_reqs.parent_level.is_editable)
         False
-        >>> print(control_reqs.child.required)
+        >>> print(control_reqs.child_level.is_required)
         False
     """
 
-    all: Optional[ApplicableForRequirements]
-    parent: Optional[ApplicableForRequirements]
-    child: Optional[ApplicableForRequirements]
+    all_levels: Optional[RequirementApplicability]
+    parent_level: Optional[RequirementApplicability]
+    child_level: Optional[RequirementApplicability]
 
 
 class BaseControl(Option):
+    """
+    Represents a control option with specific requirements and applicability.
+
+    Attributes:
+        value (Union[ControlType, str]): The value of the control option.
+        content_type (ContentType): The type of content the control option applies to.
+        applicable_elements (List[ApplicableElement]): The elements to which the control option is applicable.
+        requirements (Optional[ApplicabilityControlRequirements]): The requirements for the control option's applicability.
+        advanced_fields (Optional[List[AdvancedField]]): Additional advanced fields for the control option.
+    """
+
     value: Union[ControlType, str]
     content_type: ContentType
-    applicable_for: List[ApplicableFor] = PydanticField(
-        default=[ApplicableFor.ALL],
-        title="Applicable For",
-        description="The control is applicable for the following elements.",
+    applicable_elements: List[ApplicableElement] = PydanticField(
+        default=[ApplicableElement.ALL],
+        title="Applicable Elements",
+        description="The control option is applicable for the following elements.",
     )
-    requirements: Optional[ControlRequirements] = None
+    requirements: Optional[ApplicabilityControlRequirements] = None
+    advanced_fields: Optional[List[BaseField]] = None
 
 
 class InputControl(BaseControl):

@@ -1,8 +1,8 @@
 from typing import List
 from rossa import (
-    ApplicableForRequirements,
+    RequirementApplicability,
     BaseWorkflow,
-    ControlRequirements,
+    ApplicabilityControlRequirements,
     ControlsField,
     Image,
     InputImageControl,
@@ -63,9 +63,11 @@ class Workflow(BaseWorkflow):
         controls: List[ControlValue] = ControlsField(
             options=[
                 InputImageControl(
-                    requirements=ControlRequirements(
-                        all=ApplicableForRequirements(
-                            required=True,
+                    requirements=ApplicabilityControlRequirements(
+                        all_levels=RequirementApplicability(
+                            is_required=True,
+                            supports_mask=True,
+                            requires_mask=True,
                         ),
                     ),
                 ),

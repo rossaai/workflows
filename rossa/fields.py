@@ -1,16 +1,13 @@
 from pydantic import Field as PydanticField
 from typing import List, Literal, Optional
-
-from .performances import BasePerformance
-from .controls import BaseControl
-from .types import Option, FieldType, PerformanceType
+from .types import FormatType, Option, FieldType
 
 
 FieldTypeLiteral = Literal[
     "text",
     "textarea",
     "number",
-    "integer",
+    "slider",
     "checkbox",
     "select",
     "prompt",
@@ -95,6 +92,7 @@ def NumberField(
     min: Optional[float] = None,
     max: Optional[float] = None,
     step: Optional[float] = None,
+    format_type: FormatType = FormatType.DECIMAL,
     **kwargs,
 ):
     return BaseField(
@@ -105,27 +103,63 @@ def NumberField(
         ge=min,
         le=max,
         step=step,
+        format_type=format_type,
         **kwargs,
     )
 
 
-def IntegerField(
+def SliderField(
     title: str,
     description: str,
+    min: float,
+    max: float,
+    step: Optional[float] = None,
     placeholder: str = "",
-    min: Optional[int] = None,
-    max: Optional[int] = None,
-    step: Optional[int] = None,
+    format_type: FormatType = FormatType.DECIMAL,
     **kwargs,
 ):
+    if min > max:
+        raise Exception("Minimum value must be less than maximum value.")
+
+    if step and step <= 0:
+        raise Exception("Step value must be greater than 0.")
+
+    if min is None:
+        raise Exception("Minimum value must be provided.")
+
+    if max is None:
+        raise Exception("Maximum value must be provided.")
+
     return BaseField(
-        type=FieldType.INTEGER.value,
+        type=FieldType.SLIDER.value,
         title=title,
         description=description,
         placeholder=placeholder,
         ge=min,
         le=max,
         step=step,
+        format_type=format_type,
+        **kwargs,
+    )
+
+
+def PercentageSliderField(
+    title: str,
+    description: str,
+    placeholder: str = "",
+    min: float = 0,
+    max: float = 100,
+    step: float = 1,
+    **kwargs,
+):
+    return SliderField(
+        title=title,
+        description=description,
+        placeholder=placeholder,
+        min=min,
+        max=max,
+        step=step,
+        format_type=FormatType.PERCENTAGE,
         **kwargs,
     )
 
@@ -160,82 +194,5 @@ def SelectField(
         placeholder=placeholder,
         options=options,
         default=[],
-        **kwargs,
-    )
-
-
-# RESERVED FIELDS
-def PromptField(
-    title: str = "Prompt",
-    description: str = "Prompt for the model.",
-    placeholder: str = "What do you want to create?",
-    **kwargs,
-):
-    return BaseField(
-        type=FieldType.PROMPT.value,
-        alias="prompt",
-        title=title,
-        description=description,
-        placeholder=placeholder,
-        default="",
-        **kwargs,
-    )
-
-
-def NegativePromptField(
-    title: str = "Negative Prompt",
-    description: str = "Negative prompt for the model.",
-    placeholder: str = "What do you want to avoid?",
-    **kwargs,
-):
-    return BaseField(
-        type=FieldType.NEGATIVE_PROMPT.value,
-        alias="negative_prompt",
-        title=title,
-        description=description,
-        placeholder=placeholder,
-        default="",
-        **kwargs,
-    )
-
-
-def PerformanceField(
-    title: str = "Performance",
-    description: str = "Performance settings.",
-    options: List[BasePerformance] = [],
-    **kwargs,
-):
-    for option in options:
-        if not isinstance(option, BasePerformance):
-            raise Exception("Performance options must be a list of BasePerformance.")
-
-    return BaseField(
-        type=FieldType.PERFORMANCE.value,
-        alias="performance",
-        default=[],
-        title=title,
-        description=description,
-        options=options,
-        **kwargs,
-    )
-
-
-def ControlsField(
-    title: str = "Controls",
-    description: str = "List of controls.",
-    options: List[BaseControl] = [],
-    **kwargs,
-):
-    for option in options:
-        if not isinstance(option, BaseControl):
-            raise Exception("Control options must be a list of BaseControl.")
-
-    return BaseField(
-        type=FieldType.CONTROLS.value,
-        alias="controls",
-        default=[],
-        title=title,
-        description=description,
-        options=options,
         **kwargs,
     )

@@ -5,9 +5,13 @@ from .fields import (
     TextField,
     TextAreaField,
     NumberField,
-    IntegerField,
+    SliderField,
+    PercentageSliderField,
     CheckboxField,
     SelectField,
+)
+
+from .reserved_fields import (
     PromptField,
     NegativePromptField,
     PerformanceField,
@@ -16,8 +20,8 @@ from .fields import (
 
 from .controls import (
     ControlValue,
-    ApplicableForRequirements,
-    ControlRequirements,
+    RequirementApplicability,
+    ApplicabilityControlRequirements,
     BaseControl,
     InputControl,
     MaskControl,
@@ -61,7 +65,7 @@ from .responses import (
 
 from .types import (
     ContentType,
-    ApplicableFor,
+    ApplicableElement,
     ControlType,
     FieldType,
     PerformanceType,
@@ -81,15 +85,16 @@ __all__ = [
     "TextField",
     "TextAreaField",
     "NumberField",
-    "IntegerField",
+    "SliderField",
+    "PercentageSliderField",
     "CheckboxField",
     "SelectField",
     "PromptField",
     "NegativePromptField",
     "PerformanceField",
     "ControlsField",
-    "ApplicableForRequirements",
-    "ControlRequirements",
+    "RequirementApplicability",
+    "ApplicabilityControlRequirements",
     # Workflow
     "BaseWorkflow",
     # Image
@@ -108,8 +113,8 @@ __all__ = [
     "Notification",
     # Controls
     "ControlValue",
-    "ApplicableForRequirements",
-    "ControlRequirements",
+    "RequirementApplicability",
+    "ApplicabilityControlRequirements",
     "BaseControl",
     "InputControl",
     "MaskControl",
@@ -135,7 +140,7 @@ __all__ = [
     "QualityPerformance",
     # Types
     "ContentType",
-    "ApplicableFor",
+    "ApplicableElement",
     "Option",
     "ControlType",
     "Content",
