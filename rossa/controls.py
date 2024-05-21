@@ -184,6 +184,12 @@ class PoseControl(BaseControl):
     description: str = "Incorporates a specific pose into your generation."
 
 
+class DepthControl(BaseControl):
+    value: ControlType = ControlType.CONTROL_DEPTH
+    title: str = "Depth"
+    description: str = "Incorporates depth into your generation."
+
+
 class StyleTransferControl(BaseControl):
     value: ControlType = ControlType.CONTROL_STYLE_TRANSFER
     title: str = "Style Transfer"
@@ -221,23 +227,29 @@ class MaskImageControl(MaskControl):
     content_type: ContentType = ContentType.IMAGE
 
 
-class LineArtImageControl(LineArtControl):
-    title: str = "Line Art"
-    description: str = (
-        "Emphasize lines for constraining the generated image. Useful for sketch-to-image generation."
-    )
-    content_type: ContentType = ContentType.IMAGE
-
-
 class CannyImageControl(CannyControl):
     title: str = "Edge Detection"
     description: str = "Emphasize edges for sketch-to-image generation."
     content_type: ContentType = ContentType.IMAGE
 
 
+class LineArtImageControl(LineArtControl):
+    title: str = "Line Art"
+    description: str = (
+        "Emphasize lines for constraining the generated image. Very useful for sketch-to-image generation."
+    )
+    content_type: ContentType = ContentType.IMAGE
+
+
 class PoseImageControl(PoseControl):
     title: str = "Pose Guide"
     description: str = "Specify a pose to be incorporated into the generated image."
+    content_type: ContentType = ContentType.IMAGE
+
+
+class DepthImageControl(DepthControl):
+    title: str = "Depth"
+    description: str = "Incorporate depth into the generated image."
     content_type: ContentType = ContentType.IMAGE
 
 

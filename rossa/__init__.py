@@ -46,6 +46,8 @@ from .controls import (
     FaceReplacementImageControl,
     TransparentBackgroundControl,
     TransparentBackgroundImageControl,
+    DepthControl,
+    DepthImageControl,
 )
 
 from .performances import (
@@ -146,6 +148,8 @@ __all__ = [
     "FaceReplacementImageControl",
     "TransparentBackgroundControl",
     "TransparentBackgroundImageControl",
+    "DepthControl",
+    "DepthImageControl",
     # Performances
     "PerformanceType",
     "BasePerformance",

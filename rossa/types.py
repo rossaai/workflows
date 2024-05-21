@@ -13,9 +13,10 @@ from .constants import MAX_SAFE_DECIMAL, MAX_SAFE_INTEGER
 class ControlType(str, Enum):
     INPUT = "input"
     MASK = "mask"
+    CONTROL_LINE_ART = "control-lineart"
     CONTROL_CANNY = "control-canny"
     CONTROL_POSE = "control-pose"
-    CONTROL_LINE_ART = "control-lineart"
+    CONTROL_DEPTH = "control-depth"
     CONTROL_STYLE_TRANSFER = "control-style-transfer"
     CONTROL_COMPOSITION_TRANSFER = "control-composition-transfer"
     CONTROL_FACE_REPLACEMENT = "control-face-replacement"
