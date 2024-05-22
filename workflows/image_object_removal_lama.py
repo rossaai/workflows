@@ -1,8 +1,9 @@
 from typing import List
 from rossa import (
-    RequirementApplicability,
+    ContentType,
+    ImageControlContent,
+    MaskControlContent,
     BaseWorkflow,
-    ApplicabilityControlRequirements,
     ControlsField,
     Image,
     InputImageControl,
@@ -63,24 +64,19 @@ class Workflow(BaseWorkflow):
         controls: List[ControlValue] = ControlsField(
             options=[
                 InputImageControl(
-                    requirements=ApplicabilityControlRequirements(
-                        all_levels=RequirementApplicability(
-                            is_required=True,
-                            supports_mask=True,
-                            requires_mask=True,
-                        ),
-                    ),
+                    supported_contents=[
+                        ImageControlContent(),
+                        MaskControlContent(),
+                    ],
                 ),
             ]
         ),
     ):
         image = next_control(controls, InputImageControl())
 
-        image = image.to_pil_image().convert("RGB")
+        image = image.to_pil_image(ContentType.IMAGE).convert("RGB")
 
-        mask = image.mask_to_pil_image()
-
-        mask = mask.to_pil_image().convert("L")
+        mask = image.to_pil_image(ContentType.MASK).convert("L")
 
         result = self.simple_lama(image, mask)
 

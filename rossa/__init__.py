@@ -23,8 +23,17 @@ from .reserved_fields import (
     ControlsField,
 )
 
+from .fields_conditionals import ShowFieldIfValue
+
 from .controls import (
     ControlValue,
+    ControlContent,
+    ImageControlContent,
+    MaskControlContent,
+    VideoControlContent,
+    AudioControlContent,
+    TextControlContent,
+    ThreeDControlContent,
     RequirementApplicability,
     ApplicabilityControlRequirements,
     BaseControl,
@@ -34,7 +43,6 @@ from .controls import (
     PoseControl,
     LineArtControl,
     StyleTransferControl,
-    CompositionTransferControl,
     FaceReplacementControl,
     InputImageControl,
     MaskImageControl,
@@ -42,7 +50,6 @@ from .controls import (
     LineArtImageControl,
     PoseImageControl,
     StyleTransferImageControl,
-    CompositionTransferImageControl,
     FaceReplacementImageControl,
     TransparentBackgroundControl,
     TransparentBackgroundImageControl,
@@ -109,6 +116,8 @@ __all__ = [
     "ControlsField",
     "RequirementApplicability",
     "ApplicabilityControlRequirements",
+    # Fields Conditionals
+    "ShowFieldIfValue",
     # Workflow
     "BaseWorkflow",
     # Image
@@ -127,6 +136,13 @@ __all__ = [
     "Notification",
     # Controls
     "ControlValue",
+    "ControlContent",
+    "ImageControlContent",
+    "MaskControlContent",
+    "VideoControlContent",
+    "AudioControlContent",
+    "TextControlContent",
+    "ThreeDControlContent",
     "RequirementApplicability",
     "ApplicabilityControlRequirements",
     "BaseControl",
@@ -136,7 +152,6 @@ __all__ = [
     "LineArtControl",
     "PoseControl",
     "StyleTransferControl",
-    "CompositionTransferControl",
     "FaceReplacementControl",
     "InputImageControl",
     "MaskImageControl",
@@ -144,7 +159,6 @@ __all__ = [
     "LineArtImageControl",
     "PoseImageControl",
     "StyleTransferImageControl",
-    "CompositionTransferImageControl",
     "FaceReplacementImageControl",
     "TransparentBackgroundControl",
     "TransparentBackgroundImageControl",

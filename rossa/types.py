@@ -1,13 +1,23 @@
 import base64
 from enum import Enum
+import io
 import mimetypes
 import os
-from typing import Optional, Union
+from typing import Dict, Optional, Union
 from pydantic import BaseModel, Field
 import requests
 from fastapi import Response as FastAPIResponse
 import random
-from .constants import MAX_SAFE_DECIMAL, MAX_SAFE_INTEGER
+
+from .image_conversion_utils import url_to_cv2_image, url_to_pil_image
+from .constants import (
+    DEFAULT_IMAGE_FORMAT,
+    DEFAULT_IMAGE_MIME_TYPE,
+    MAX_SAFE_DECIMAL,
+    MAX_SAFE_INTEGER,
+)
+from PIL import Image
+import numpy as np
 
 
 class ControlType(str, Enum):
@@ -25,6 +35,7 @@ class ControlType(str, Enum):
 
 class ContentType(str, Enum):
     IMAGE = "image"
+    MASK = "mask"
     VIDEO = "video"
     AUDIO = "audio"
     TEXT = "text"
@@ -112,75 +123,117 @@ class Option(BaseModel):
 
 
 class Content(BaseModel):
-    content_type: Union[ContentType, str]
-    control_type: ControlType = Field(description="Optional control type")
-    content: Union[str, bytes] = Field(
-        description="Content as str (URL, data URL-base64, or path) or bytes"
+    contents: Dict[ContentType, Union[str, bytes, Image.Image, np.ndarray]] = Field(
+        description="Dictionary mapping ContentType to content as str (URL, data URL-base64, or path), bytes, PIL Image, or NumPy array"
+    )
+    control_type: ControlType = Field(
+        default=ControlType.INPUT, description="Required control type"
     )
 
     class Config:
         arbitrary_types_allowed = True
 
-    def to_response(self) -> FastAPIResponse:
-        if isinstance(self.content, str):
-            if self.content.startswith(("http://", "https://")):
-                response = requests.get(self.content)
+    def to_response(self, content_type: ContentType) -> FastAPIResponse:
+        content = self.contents.get(content_type)
+        if content is None:
+            raise ValueError(f"No content found for content type: {content_type}")
+
+        if isinstance(content, (Image.Image, np.ndarray)):
+            buffered = io.BytesIO()
+            if isinstance(content, Image.Image):
+                content.save(buffered, format=DEFAULT_IMAGE_FORMAT)
+            else:
+                Image.fromarray(content).save(buffered, format=DEFAULT_IMAGE_FORMAT)
+            content_data = buffered.getvalue()
+            return FastAPIResponse(
+                content=content_data,
+                media_type=DEFAULT_IMAGE_MIME_TYPE,
+            )
+        elif isinstance(content, str):
+            if content.startswith(("http://", "https://")):
+                response = requests.get(content)
                 return FastAPIResponse(
                     content=response.content,
                     media_type=response.headers["Content-Type"],
                 )
-            elif self.content.startswith("data:"):
-                header, encoded = self.content.split(",", 1)
+            elif content.startswith("data:"):
+                header, encoded = content.split(",", 1)
                 media_type = header.split(":")[1].split(";")[0]
                 content = base64.b64decode(encoded)
                 return FastAPIResponse(content=content, media_type=media_type)
             else:
-                if os.path.isfile(self.content):
-                    with open(self.content, "rb") as file:
-                        content = file.read()
-                        media_type, _ = mimetypes.guess_type(self.content)
-                        return FastAPIResponse(content=content, media_type=media_type)
+                if os.path.isfile(content):
+                    with open(content, "rb") as file:
+                        content_data = file.read()
+                        media_type, _ = mimetypes.guess_type(content)
+                        return FastAPIResponse(
+                            content=content_data, media_type=media_type
+                        )
                 else:
-                    raise ValueError(f"File not found: {self.content}")
-        elif isinstance(self.content, bytes):
+                    raise ValueError(f"File not found: {content}")
+        elif isinstance(content, bytes):
             return FastAPIResponse(
-                content=self.content, media_type="application/octet-stream"
+                content=content, media_type="application/octet-stream"
             )
 
-    def save(self, file_path: str):
-        with open(file_path, "wb") as file:
-            if isinstance(self.content, str):
-                if self.content.startswith(("http://", "https://")):
-                    response = requests.get(self.content)
-                    file.write(response.content)
-                elif self.content.startswith("data:"):
-                    header, encoded = self.content.split(",", 1)
-                    content = base64.b64decode(encoded)
+    def save(self, content_type: ContentType, file_path: str):
+        content = self.contents.get(content_type)
+        if content is None:
+            raise ValueError(f"No content found for content type: {content_type}")
 
+        if isinstance(content, (Image.Image, np.ndarray)):
+            img = (
+                content
+                if isinstance(content, Image.Image)
+                else Image.fromarray(content)
+            )
+            try:
+                img.save(file_path)
+            except Exception as e:
+                if "unknown file extension" in str(e):
+                    img.save(file_path, format=DEFAULT_IMAGE_FORMAT)
+        else:
+            with open(file_path, "wb") as file:
+                if isinstance(content, str):
+                    if content.startswith(("http://", "https://")):
+                        response = requests.get(content)
+                        file.write(response.content)
+                    elif content.startswith("data:"):
+                        header, encoded = content.split(",", 1)
+                        content_data = base64.b64decode(encoded)
+                        file.write(content_data)
+                    else:
+                        with open(content, "rb") as src_file:
+                            file.write(src_file.read())
+                elif isinstance(content, bytes):
                     file.write(content)
-                    # file_name, file_extension = os.path.splitext(file_path)
 
-                    # header, encoded = self.content.split(",", 1)
-                    # content = base64.b64decode(encoded)
+    def to_pil_image(
+        self, content_type: ContentType = ContentType.IMAGE
+    ) -> Image.Image:
+        content = self.contents.get(content_type)
+        if content is None:
+            raise Exception(f"{content_type} content is not provided.")
+        if isinstance(content, Image.Image):
+            return content
+        elif isinstance(content, np.ndarray):
+            return Image.fromarray(content)
+        else:
+            img = url_to_pil_image(content)
+            if img is None:
+                raise Exception("Invalid image URL. Please provide a valid image URL.")
+            return img
 
-                    # # Extract the MIME type from the header
-                    # mime_type = header.split(":")[1].split(";")[0]
-
-                    # # Get the file extension based on the MIME type
-                    # extension = mimetypes.guess_extension(mime_type)
-
-                    # if extension and extension != file_extension:
-                    #     # Create a new file path with the correct extension
-                    #     new_file_path = file_name + extension
-
-                    #     # Save the content to the new file path
-                    #     with open(new_file_path, "wb") as new_file:
-                    #         new_file.write(content)
-                    # else:
-                    #     # Save the content to the original file path
-                    #     file.write(content)
-                else:
-                    with open(self.content, "rb") as src_file:
-                        file.write(src_file.read())
-            elif isinstance(self.content, bytes):
-                file.write(self.content)
+    def to_cv2_image(self, content_type: ContentType = ContentType.IMAGE) -> np.ndarray:
+        content = self.contents.get(content_type)
+        if content is None:
+            raise Exception(f"{content_type} content is not provided.")
+        if isinstance(content, np.ndarray):
+            return content
+        elif isinstance(content, Image.Image):
+            return np.array(content)
+        else:
+            img = url_to_cv2_image(content)
+            if img is None:
+                raise Exception("Invalid image URL. Please provide a valid image URL.")
+            return img

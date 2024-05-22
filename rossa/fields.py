@@ -1,5 +1,7 @@
 from pydantic import Field as PydanticField
-from typing import Any, List, Literal, Optional
+from typing import List, Literal, Optional, Union
+
+from .fields_conditionals import ShowFieldIfValue
 from .types import FormatType, GeneratorType, Option, FieldType
 
 
@@ -22,9 +24,11 @@ def BaseField(
     type: FieldTypeLiteral,
     description: str,
     alias: str = None,
+    id: Union[str, None] = None,
     placeholder: str = "",
     options: Optional[List[Option]] = None,
     default_generator_type: Optional[GeneratorType] = None,
+    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
     **kwargs,
 ):
     if options:
@@ -52,6 +56,7 @@ def BaseField(
         raise Exception("Field type must be in FieldType.")
 
     return PydanticField(
+        id=id,
         default_factory=(
             default_generator_type.generate(kwargs.get("ge"), kwargs.get("le"))
             if default_generator_type
@@ -63,6 +68,7 @@ def BaseField(
         description=description,
         placeholder=placeholder,
         options=options,
+        show_if=show_if,
         **kwargs,
     )
 
@@ -71,9 +77,11 @@ def TextField(
     title: str,
     description: str,
     placeholder: str = "",
+    id: Union[str, None] = None,
     **kwargs,
 ):
     return BaseField(
+        id=id,
         type=FieldType.TEXT.value,
         title=title,
         description=description,
@@ -85,14 +93,18 @@ def TextField(
 def TextAreaField(
     title: str,
     description: str,
+    id: Union[str, None] = None,
     placeholder: str = "",
+    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
     **kwargs,
 ):
     return BaseField(
+        id=id,
         type=FieldType.TEXTAREA.value,
         title=title,
         description=description,
         placeholder=placeholder,
+        show_if=show_if,
         **kwargs,
     )
 
@@ -100,6 +112,7 @@ def TextAreaField(
 def NumberField(
     title: str,
     description: str,
+    id: Union[str, None] = None,
     placeholder: str = "",
     min: Optional[float] = None,
     max: Optional[float] = None,
@@ -109,6 +122,7 @@ def NumberField(
     **kwargs,
 ):
     return BaseField(
+        id=id,
         type=FieldType.NUMBER.value,
         title=title,
         description=description,
@@ -125,6 +139,7 @@ def NumberField(
 def IntegerField(
     title: str,
     description: str,
+    id: Union[str, None] = None,
     placeholder: str = "",
     step: int = 1,
     default: Optional[int] = None,
@@ -136,6 +151,7 @@ def IntegerField(
     step = int(step)
 
     return BaseField(
+        id=id,
         type=FieldType.NUMBER.value,
         title=title,
         description=description,
@@ -155,6 +171,7 @@ def SliderField(
     description: str,
     min: float,
     max: float,
+    id: Union[str, None] = None,
     step: Optional[float] = None,
     placeholder: str = "",
     format_type: FormatType = FormatType.DECIMAL,
@@ -173,6 +190,7 @@ def SliderField(
         raise Exception("Maximum value must be provided.")
 
     return BaseField(
+        id=id,
         type=FieldType.SLIDER.value,
         title=title,
         description=description,
@@ -188,6 +206,7 @@ def SliderField(
 def PercentageSliderField(
     title: str,
     description: str,
+    id: Union[str, None] = None,
     placeholder: str = "",
     min: float = 0,
     max: float = 100,
@@ -209,11 +228,13 @@ def PercentageSliderField(
 def CheckboxField(
     title: str,
     description: str,
+    id: Union[str, None] = None,
     placeholder: str = "",
     default: bool = False,
     **kwargs,
 ):
     return BaseField(
+        id=id,
         type=FieldType.CHECKBOX.value,
         title=title,
         description=description,
@@ -227,10 +248,12 @@ def SelectField(
     title: str,
     description: str,
     options: List[Option],
+    id: Union[str, None] = None,
     placeholder: str = "",
     **kwargs,
 ):
     return BaseField(
+        id=id,
         type=FieldType.SELECT.value,
         title=title,
         description=description,

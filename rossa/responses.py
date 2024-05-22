@@ -1,82 +1,74 @@
 from typing import Optional, Union
 from pydantic import BaseModel, Field
-from PIL import Image
-import numpy as np
-import io
 from fastapi import Response as FastAPIResponse
 from .types import Content, ContentType, ControlType, ProgressNotificationType
-
-
-DEFAULT_IMAGE_FORMAT = "PNG"
-DEFAULT_IMAGE_MIME_TYPE = "image/png"
+from PIL import Image
+import numpy as np
 
 
 class BaseResponse(Content):
-    control_type: ControlType = Field(
-        default=ControlType.INPUT, description="Optional control type"
-    )
+    pass
 
 
-class ImageResponse(BaseResponse):
-    content_type: ContentType = ContentType.IMAGE
-    content: Union[Image.Image, np.ndarray, str, bytes] = Field(
-        description="Image content as PIL Image, Numpy array, str (URL, data URL-base64, or path), or bytes"
-    )
-
+class BaseTextResponse(BaseResponse):
     def to_response(self) -> FastAPIResponse:
-        if isinstance(self.content, (Image.Image, np.ndarray)):
-            buffered = io.BytesIO()
-            if isinstance(self.content, Image.Image):
-                self.content.save(buffered, format=DEFAULT_IMAGE_FORMAT)
-            else:
-                Image.fromarray(self.content).save(
-                    buffered, format=DEFAULT_IMAGE_FORMAT
-                )
-            content = buffered.getvalue()
-            return FastAPIResponse(content=content, media_type=DEFAULT_IMAGE_MIME_TYPE)
-        else:
-            return super().to_response()
+        content = self.contents.get(ContentType.TEXT)
+        return FastAPIResponse(content=content, media_type="text/plain")
 
     def save(self, file_path: str):
-        if isinstance(self.content, (Image.Image, np.ndarray)):
-            img = None
-
-            if isinstance(self.content, Image.Image):
-                img = self.content
-            else:
-                img = Image.fromarray(self.content)
-
-            try:
-                img.save(file_path)
-            except Exception as e:
-                if "unknown file extension" in str(e):
-                    img.save(file_path, format=DEFAULT_IMAGE_FORMAT)
-        else:
-            super().save(file_path)
-
-
-class VideoResponse(BaseResponse):
-    content_type: ContentType = ContentType.VIDEO
-
-
-class AudioResponse(BaseResponse):
-    content_type: ContentType = ContentType.AUDIO
-
-
-class TextResponse(BaseResponse):
-    content_type: ContentType = ContentType.TEXT
-    content: str = Field(description="Text content as string")
-
-    def to_response(self) -> FastAPIResponse:
-        return FastAPIResponse(content=self.content, media_type="text/plain")
-
-    def save(self, file_path: str):
+        content = self.contents.get(ContentType.TEXT)
         with open(file_path, "w") as file:
-            file.write(self.content)
+            file.write(content)
 
 
-class ThreeDResponse(BaseResponse):
-    content_type: ContentType = ContentType.THREE_D
+def ImageResponse(
+    content: Union[str, bytes, Image.Image, np.ndarray],
+    control_type: Optional[ControlType] = None,
+):
+    return BaseResponse(
+        contents={ContentType.IMAGE: content},
+        control_type=control_type,
+    )
+
+
+def VideoResponse(
+    content: Union[str, bytes],
+    control_type: Optional[ControlType] = None,
+):
+    return BaseResponse(
+        contents={ContentType.VIDEO: content},
+        control_type=control_type,
+    )
+
+
+def AudioResponse(
+    content: Union[str, bytes],
+    control_type: Optional[ControlType] = None,
+):
+    return BaseResponse(
+        contents={ContentType.AUDIO: content},
+        control_type=control_type,
+    )
+
+
+def ThreeDResponse(
+    content: Union[str, bytes],
+    control_type: Optional[ControlType] = None,
+):
+    return BaseResponse(
+        contents={ContentType.THREE_D: content},
+        control_type=control_type,
+    )
+
+
+def TextResponse(
+    content: str,
+    control_type: Optional[ControlType] = None,
+):
+    return BaseTextResponse(
+        contents={ContentType.TEXT: content},
+        control_type=control_type,
+    )
 
 
 class BaseNotification(BaseModel):

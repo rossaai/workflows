@@ -3,14 +3,10 @@ from typing import Any, Dict, List, Optional, Union
 
 from fields import BaseField
 from .types import Content, Option, ApplicableElement, ContentType, ControlType
-from .image_conversion_utils import url_to_pil_image, url_to_cv2_image
 
 
 class ControlValue(Content):
     influence: float
-    content: str
-    mask: Optional[str] = None
-
     advanced_fields: Optional[Dict[str, Any]] = None
 
     def get_advanced_field(self, field_name: str, default: Any = None):
@@ -20,103 +16,34 @@ class ControlValue(Content):
 
         return self.advanced_fields.get(field_name, default)
 
-    def has_mask(self):
-        """Checks if the control has a mask."""
-        return self.mask is not None
 
-    def to_pil_image(self):
-        """Converts a URL to a PIL image."""
-        img = url_to_pil_image(self.content)
-
-        if img is None:
-            raise Exception("Invalid image URL. Please provide a valid image URL.")
-
-        return img
-
-    def to_cv2_image(self):
-        """Converts a URL to a cv2 image. Remember to `.apt_install("ffmpeg", "libsm6", "libxext6")` to your `rossa.Image`."""
-        img = url_to_cv2_image(self.content)
-
-        if img is None:
-            raise Exception("Invalid image URL. Please provide a valid image URL.")
-
-        return img
-
-    def mask_to_pil_image(self):
-        """Converts a URL to a PIL image."""
-        if not self.has_mask():
-            raise Exception("Mask URL is not provided.")
-
-        img = url_to_pil_image(self.mask)
-
-        if img is None:
-            raise Exception("Invalid image URL. Please provide a valid image URL.")
-
-        return img
-
-    def mask_to_cv2_image(self):
-        """Converts a URL to a cv2 image. Remember to `.apt_install("ffmpeg", "libsm6", "libxext6")` to your `rossa.Image`."""
-        if not self.has_mask():
-            raise Exception("Mask URL is not provided.")
-
-        img = url_to_cv2_image(self.mask)
-
-        if img is None:
-            raise Exception("Invalid image URL. Please provide a valid image URL.")
-
-        return img
+class ControlContent(BaseModel):
+    content_type: ContentType
+    is_required: bool = True
 
 
-class RequirementApplicability(BaseModel):
-    """
-    Represents the applicability of specific requirements.
-
-    Attributes:
-        is_required (bool): Indicates whether the requirement is mandatory. Default is False.
-        supports_influence (bool): Indicates whether the requirement supports influence. Default is True.
-        supports_mask (bool): Indicates whether the requirement supports masking. Default is False.
-        requires_mask (bool): Indicates whether the requirement requires masking. Default is False.
-
-    Examples:
-        >>> reqs = RequirementApplicability(is_required=True, is_editable=False)
-        >>> print(reqs.is_required)
-        True
-        >>> print(reqs.is_editable)
-        False
-    """
-
-    is_required: bool = False
-    supports_influence: bool = True
-    supports_mask: bool = False
-    requires_mask: bool = False
+class ImageControlContent(ControlContent):
+    content_type: ContentType = ContentType.IMAGE
 
 
-class ApplicabilityControlRequirements(BaseModel):
-    """
-    Represents the control requirements for different applicability levels.
+class MaskControlContent(ImageControlContent):
+    content_type: ContentType = ContentType.MASK
 
-    Attributes:
-        all_levels (Optional[RequirementApplicability]): The requirements applicable for all levels.
-        parent_level (Optional[RequirementApplicability]): The requirements applicable for the parent level.
-        child_level (Optional[RequirementApplicability]): The requirements applicable for the child level.
 
-    Examples:
-        >>> control_reqs = ApplicabilityApplicabilityControlRequirements(
-        ...     all_levels=RequirementApplicability(is_required=True),
-        ...     parent_level=RequirementApplicability(is_editable=False),
-        ...     child_level=RequirementApplicability(is_required=False, is_editable=True)
-        ... )
-        >>> print(control_reqs.all_levels.is_required)
-        True
-        >>> print(control_reqs.parent_level.is_editable)
-        False
-        >>> print(control_reqs.child_level.is_required)
-        False
-    """
+class VideoControlContent(ControlContent):
+    content_type: ContentType = ContentType.VIDEO
 
-    all_levels: Optional[RequirementApplicability]
-    parent_level: Optional[RequirementApplicability]
-    child_level: Optional[RequirementApplicability]
+
+class AudioControlContent(ControlContent):
+    content_type: ContentType = ContentType.AUDIO
+
+
+class TextControlContent(ControlContent):
+    content_type: ContentType = ContentType.TEXT
+
+
+class ThreeDControlContent(ControlContent):
+    content_type: ContentType = ContentType.THREE_D
 
 
 class BaseControl(Option):
@@ -133,12 +60,10 @@ class BaseControl(Option):
 
     value: Union[ControlType, str]
     content_type: ContentType
-    applicable_elements: List[ApplicableElement] = PydanticField(
-        default=[ApplicableElement.ALL],
-        title="Applicable Elements",
-        description="The control option is applicable for the following elements.",
+    supported_contents: List[ControlContent] = PydanticField(
+        title="Supported Contents",
+        description="The supported content types for the control option.",
     )
-    requirements: Optional[ApplicabilityControlRequirements] = None
     advanced_fields: Optional[List[BaseField]] = None
 
     @root_validator(pre=True)
@@ -148,6 +73,21 @@ class BaseControl(Option):
             for field in values["advanced_fields"]:
                 if not hasattr(field, "alias") or field.alias is None:
                     raise Exception(f"Advanced field {field} must have an alias.")
+
+        return values
+
+    @root_validator(pre=True)
+    def validate_supported_contents(cls, values):
+        """Validates that the supported contents are valid."""
+        if "supported_contents" in values and values["supported_contents"] is not None:
+            for content in values["supported_contents"]:
+                if not isinstance(content, ControlContent):
+                    raise Exception(
+                        f"Supported content {content} must be a ControlContent."
+                    )
+
+            if len(values["supported_contents"]) == 0:
+                raise Exception("Supported contents cannot be empty.")
 
         return values
 
@@ -196,12 +136,6 @@ class StyleTransferControl(BaseControl):
     description: str = "Incorporates style into your generation."
 
 
-class CompositionTransferControl(BaseControl):
-    value: ControlType = ControlType.CONTROL_COMPOSITION_TRANSFER
-    title: str = "Composition Transfer"
-    description: str = "Incorporates composition into your generation."
-
-
 class FaceReplacementControl(BaseControl):
     value: ControlType = ControlType.CONTROL_FACE_REPLACEMENT
     title: str = "Face Replacement"
@@ -231,49 +165,56 @@ class CannyImageControl(CannyControl):
     title: str = "Edge Detection"
     description: str = "Emphasize edges for sketch-to-image generation."
     content_type: ContentType = ContentType.IMAGE
+    supported_contents = [ImageControlContent()]
 
 
 class LineArtImageControl(LineArtControl):
-    title: str = "Line Art"
+    title: str = "Line Art Guide"
     description: str = (
         "Emphasize lines for constraining the generated image. Very useful for sketch-to-image generation."
     )
     content_type: ContentType = ContentType.IMAGE
+    supported_contents = [ImageControlContent()]
 
 
 class PoseImageControl(PoseControl):
     title: str = "Pose Guide"
-    description: str = "Specify a pose to be incorporated into the generated image."
+    description: str = (
+        "Specify a pose to be incorporated into the generated image. Useful for complex poses."
+    )
     content_type: ContentType = ContentType.IMAGE
+    supported_contents = [ImageControlContent()]
 
 
 class DepthImageControl(DepthControl):
-    title: str = "Depth"
-    description: str = "Incorporate depth into the generated image."
+    title: str = "Depth Guide"
+    description: str = (
+        "Incorporate depth into the generated image. Useful for 3D effects."
+    )
     content_type: ContentType = ContentType.IMAGE
+    supported_contents = [ImageControlContent()]
 
 
 class StyleTransferImageControl(StyleTransferControl):
-    title: str = "Style Image"
+    title: str = "Style Transfer"
     description: str = (
         "Use an image to influence the style, composition, and colors of the generated result."
     )
     content_type: ContentType = ContentType.IMAGE
-
-
-class CompositionTransferImageControl(CompositionTransferControl):
-    title: str = "Composition Transfer"
-    description: str = "Incorporate composition into the generated image."
-    content_type: ContentType = ContentType.IMAGE
+    supported_contents = [ImageControlContent()]
 
 
 class FaceReplacementImageControl(FaceReplacementControl):
-    title: str = "Face Replacement"
-    description: str = "Replace faces in the generated image."
+    title: str = "Face Transfer"
+    description: str = (
+        "Incorporate a face into the generated image. Useful for portraits or character design."
+    )
     content_type: ContentType = ContentType.IMAGE
+    supported_contents = [ImageControlContent()]
 
 
 class TransparentBackgroundImageControl(TransparentBackgroundControl):
     title: str = "Transparent Background"
     description: str = "When generating it keeps the background transparent"
     content_type: ContentType = ContentType.IMAGE
+    supported_contents = [ImageControlContent()]
