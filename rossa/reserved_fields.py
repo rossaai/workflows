@@ -40,27 +40,6 @@ def NegativePromptField(
     )
 
 
-def PerformanceField(
-    title: str = "Performance",
-    description: str = "Performance settings.",
-    options: List[BasePerformance] = [],
-    **kwargs,
-):
-    for option in options:
-        if not isinstance(option, BasePerformance):
-            raise Exception("Performance options must be a list of BasePerformance.")
-
-    return BaseField(
-        type=FieldType.PERFORMANCE.value,
-        alias="performance",
-        default=[],
-        title=title,
-        description=description,
-        options=options,
-        **kwargs,
-    )
-
-
 def ControlsField(
     title: str = "Controls",
     description: str = "List of controls.",
@@ -74,8 +53,8 @@ def ControlsField(
     return BaseField(
         type=FieldType.CONTROLS.value,
         alias="controls",
-        default=[],
         title=title,
+        default=[],
         description=description,
         options=options,
         **kwargs,

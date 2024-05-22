@@ -1,8 +1,8 @@
 from pydantic import BaseModel, Field as PydanticField, root_validator
 from typing import Any, Dict, List, Optional, Union
 
-from fields import BaseField
-from .types import Content, Option, ApplicableElement, ContentType, ControlType
+from .types import Content, Option, ContentType, ControlType
+from .fields import BaseFieldInfo
 
 
 class ControlValue(Content):
@@ -26,7 +26,7 @@ class ImageControlContent(ControlContent):
     content_type: ContentType = ContentType.IMAGE
 
 
-class MaskControlContent(ImageControlContent):
+class MaskControlContent(ControlContent):
     content_type: ContentType = ContentType.MASK
 
 
@@ -60,11 +60,11 @@ class BaseControl(Option):
 
     value: Union[ControlType, str]
     content_type: ContentType
-    supported_contents: List[ControlContent] = PydanticField(
-        title="Supported Contents",
-        description="The supported content types for the control option.",
-    )
-    advanced_fields: Optional[List[BaseField]] = None
+    supported_contents: List[ControlContent]
+    advanced_fields: Optional[List[BaseFieldInfo]] = None
+
+    class Config:
+        arbitrary_types_allowed = True
 
     @root_validator(pre=True)
     def validate_every_advanced_field_has_alias(cls, values):
@@ -153,19 +153,21 @@ class InputImageControl(InputControl):
     title: str = "Source Image"
     description: str = "Provide an input image for Image generation."
     content_type: ContentType = ContentType.IMAGE
+    supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
 class MaskImageControl(MaskControl):
     title: str = "Mask"
     description: str = "Define areas to be modified for Image generation."
     content_type: ContentType = ContentType.IMAGE
+    supported_contents: List[ControlContent] = [MaskControlContent()]
 
 
 class CannyImageControl(CannyControl):
     title: str = "Edge Detection"
     description: str = "Emphasize edges for sketch-to-image generation."
     content_type: ContentType = ContentType.IMAGE
-    supported_contents = [ImageControlContent()]
+    supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
 class LineArtImageControl(LineArtControl):
@@ -174,7 +176,7 @@ class LineArtImageControl(LineArtControl):
         "Emphasize lines for constraining the generated image. Very useful for sketch-to-image generation."
     )
     content_type: ContentType = ContentType.IMAGE
-    supported_contents = [ImageControlContent()]
+    supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
 class PoseImageControl(PoseControl):
@@ -183,7 +185,7 @@ class PoseImageControl(PoseControl):
         "Specify a pose to be incorporated into the generated image. Useful for complex poses."
     )
     content_type: ContentType = ContentType.IMAGE
-    supported_contents = [ImageControlContent()]
+    supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
 class DepthImageControl(DepthControl):
@@ -192,7 +194,7 @@ class DepthImageControl(DepthControl):
         "Incorporate depth into the generated image. Useful for 3D effects."
     )
     content_type: ContentType = ContentType.IMAGE
-    supported_contents = [ImageControlContent()]
+    supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
 class StyleTransferImageControl(StyleTransferControl):
@@ -201,7 +203,7 @@ class StyleTransferImageControl(StyleTransferControl):
         "Use an image to influence the style, composition, and colors of the generated result."
     )
     content_type: ContentType = ContentType.IMAGE
-    supported_contents = [ImageControlContent()]
+    supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
 class FaceReplacementImageControl(FaceReplacementControl):
@@ -210,11 +212,11 @@ class FaceReplacementImageControl(FaceReplacementControl):
         "Incorporate a face into the generated image. Useful for portraits or character design."
     )
     content_type: ContentType = ContentType.IMAGE
-    supported_contents = [ImageControlContent()]
+    supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
 class TransparentBackgroundImageControl(TransparentBackgroundControl):
     title: str = "Transparent Background"
     description: str = "When generating it keeps the background transparent"
     content_type: ContentType = ContentType.IMAGE
-    supported_contents = [ImageControlContent()]
+    supported_contents: List[ControlContent] = [ImageControlContent()]

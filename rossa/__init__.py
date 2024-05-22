@@ -19,7 +19,6 @@ from .fields import (
 from .reserved_fields import (
     PromptField,
     NegativePromptField,
-    PerformanceField,
     ControlsField,
 )
 
@@ -34,8 +33,6 @@ from .controls import (
     AudioControlContent,
     TextControlContent,
     ThreeDControlContent,
-    RequirementApplicability,
-    ApplicabilityControlRequirements,
     BaseControl,
     InputControl,
     MaskControl,
@@ -112,10 +109,7 @@ __all__ = [
     "SelectField",
     "PromptField",
     "NegativePromptField",
-    "PerformanceField",
     "ControlsField",
-    "RequirementApplicability",
-    "ApplicabilityControlRequirements",
     # Fields Conditionals
     "ShowFieldIfValue",
     # Workflow
@@ -143,8 +137,6 @@ __all__ = [
     "AudioControlContent",
     "TextControlContent",
     "ThreeDControlContent",
-    "RequirementApplicability",
-    "ApplicabilityControlRequirements",
     "BaseControl",
     "InputControl",
     "MaskControl",
