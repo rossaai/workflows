@@ -237,3 +237,6 @@ class Content(BaseModel):
             if img is None:
                 raise Exception("Invalid image URL. Please provide a valid image URL.")
             return img
+
+    def has_mask(self) -> bool:
+        return ContentType.MASK in self.contents
