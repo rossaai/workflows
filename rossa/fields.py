@@ -61,13 +61,18 @@ def BaseField(
         raise Exception("Field type must be in FieldType.")
 
     def default_factory():
-        if default_generator_type:
+        if default_generator_type is not None:
             return default_generator_type.generate(kwargs.get("ge"), kwargs.get("le"))
-        return None
+
+        return default
 
     return PydanticField(
         alias=alias,
-        default_factory=(default_factory if default_generator_type else None),
+        default_factory=(
+            default_factory
+            if isinstance(default_generator_type, GeneratorType) or default is not None
+            else None
+        ),
         title=title,
         type=type,
         description=description,
