@@ -158,7 +158,7 @@ def run_local(filepath: str):
 
     print(f"Running local with file: {local_file}")
 
-    # os.system(f"python {local_file}")
+    os.system(f"python {local_file}")
 
 
 def run_modal(filepath: str, app_name: str, gpu: str, force_build: bool):
