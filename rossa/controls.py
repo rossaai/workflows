@@ -1,8 +1,10 @@
-from pydantic import BaseModel, Field as PydanticField, root_validator
+from pydantic import BaseModel, root_validator
 from typing import Any, Dict, List, Optional, Union
 
+from .constants import REGIONAL_PROMPT_ADVANCED_FIELD_ALIAS
+
 from .types import Content, Option, ContentType, ControlType
-from .fields import BaseFieldInfo
+from .fields import BaseFieldInfo, TextAreaField
 
 
 class ControlValue(Content):
@@ -148,6 +150,20 @@ class TransparentBackgroundControl(BaseControl):
     description: str = "When generating it keeps the background transparent"
 
 
+class RegionalPromptControl(BaseControl):
+    value: ControlType = ControlType.CONTROL_REGIONAL_PROMPT
+    title: str = "Regional Prompt"
+    description: str = "Incorporates regional prompt into your generation."
+    advanced_fields: List[BaseFieldInfo] = [
+        TextAreaField(
+            alias=REGIONAL_PROMPT_ADVANCED_FIELD_ALIAS,
+            title="Regional Prompt",
+            description="Enter the regional prompt for the selected mask area.",
+            placeholder="Write the regional prompt here.",
+        ),
+    ]
+
+
 # IMAGE CONTROLS
 class InputImageControl(InputControl):
     title: str = "Source Image"
@@ -220,3 +236,10 @@ class TransparentBackgroundImageControl(TransparentBackgroundControl):
     description: str = "When generating it keeps the background transparent"
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [ImageControlContent()]
+
+
+class RegionalPromptImageControl(RegionalPromptControl):
+    title: str = "Regional Prompt"
+    description: str = "Mark the areas for applying regional prompts."
+    content_type: ContentType = ContentType.IMAGE
+    supported_contents: List[ControlContent] = [MaskControlContent()]

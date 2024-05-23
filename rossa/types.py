@@ -27,6 +27,7 @@ class ControlType(str, Enum):
     CONTROL_CANNY = "control-canny"
     CONTROL_POSE = "control-pose"
     CONTROL_DEPTH = "control-depth"
+    CONTROL_REGIONAL_PROMPT = "control-regional-prompt"
     CONTROL_STYLE_TRANSFER = "control-style-transfer"
     CONTROL_COMPOSITION_TRANSFER = "control-composition-transfer"
     CONTROL_FACE_REPLACEMENT = "control-face-replacement"

@@ -1,7 +1,11 @@
 from .image import Image
 from .workflow import BaseWorkflow
 
-from .constants import MAX_SAFE_INTEGER, MAX_SAFE_DECIMAL
+from .constants import (
+    MAX_SAFE_INTEGER,
+    MAX_SAFE_DECIMAL,
+    REGIONAL_PROMPT_ADVANCED_FIELD_ALIAS,
+)
 
 
 from .fields import (
@@ -52,6 +56,8 @@ from .controls import (
     TransparentBackgroundImageControl,
     DepthControl,
     DepthImageControl,
+    RegionalPromptControl,
+    RegionalPromptImageControl,
 )
 
 from .performances import (
@@ -96,6 +102,7 @@ __all__ = [
     # Constants
     "MAX_SAFE_INTEGER",
     "MAX_SAFE_DECIMAL",
+    "REGIONAL_PROMPT_ADVANCED_FIELD_ALIAS",
     # Fields
     "FieldType",
     "BaseField",
@@ -156,6 +163,8 @@ __all__ = [
     "TransparentBackgroundImageControl",
     "DepthControl",
     "DepthImageControl",
+    "RegionalPromptControl",
+    "RegionalPromptImageControl",
     # Performances
     "PerformanceType",
     "BasePerformance",
