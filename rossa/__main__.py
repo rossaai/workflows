@@ -16,7 +16,7 @@ SUPPORTED_MODAL_GPUS = ["T4", "L4", "A100", "A10G", "H100"]
 
 def create_modal_file(
     code: str,
-    stub_name: str,
+    app_name: str,
     gpu: str,
     force_build: bool = False,
 ):
@@ -55,8 +55,8 @@ def create_modal_file(
         code_path = os.path.join(temp_dir, "deployment.py")
 
         code = workflow_instance.to_modal(
-            modal_stub_name=stub_name,
-            modal_stub_args=f"gpu=modal.gpu.{gpu}()" if gpu else "",
+            modal_app_name=app_name,
+            modal_app_args=f"gpu=modal.gpu.{gpu}()" if gpu else "",
             custom_class_code=code,
             dockerfile_path=dockerfile_path,
             return_code_and_dockerfile=True,
@@ -96,7 +96,7 @@ def main():
     parser.add_argument("filepath", type=str, help="The path to the file")
 
     # Optional arguments for 'modal run'
-    parser.add_argument("--stub", type=str, help="Use stub name")
+    parser.add_argument("--app", type=str, help="Use app name")
 
     parser.add_argument(
         "--gpu",
@@ -115,30 +115,30 @@ def main():
 
     if args.provider == "modal":
         if args.command == "run":
-            run_modal(args.filepath, args.stub, args.gpu, args.force_build)
+            run_modal(args.filepath, args.app, args.gpu, args.force_build)
         elif args.command == "build":
-            build_modal(args.filepath, args.stub, args.gpu, args.force_build)
+            build_modal(args.filepath, args.app, args.gpu, args.force_build)
     else:
         parser.print_help()
 
 
-def run_modal(filepath: str, stub_name: str, gpu: str, force_build: bool):
+def run_modal(filepath: str, app_name: str, gpu: str, force_build: bool):
     # Logic to execute the "run" command for modal
     with open(filepath, "r") as f:
         code = f.read()
 
-    modal_file = create_modal_file(code, stub_name, gpu)
+    modal_file = create_modal_file(code, app_name, gpu)
 
     print(f"Running modal with file: {modal_file}")
 
     os.system(f"modal run {modal_file}")
 
 
-def build_modal(filepath: str, stub_name: str, gpu: str, force_build: bool):
+def build_modal(filepath: str, app_name: str, gpu: str, force_build: bool):
     with open(filepath, "r") as f:
         code = f.read()
 
-    modal_file = create_modal_file(code, stub_name, gpu, force_build)
+    modal_file = create_modal_file(code, app_name, gpu, force_build)
 
     print(f"Building modal with file: {modal_file}")
 

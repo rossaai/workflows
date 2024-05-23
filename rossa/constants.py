@@ -6,3 +6,5 @@ MAX_SAFE_DECIMAL = 9007199254740991.0  # Ensure compatibility with JavaScript
 DEFAULT_IMAGE_FORMAT = "PNG"
 
 DEFAULT_IMAGE_MIME_TYPE = "image/png"
+
+REGIONAL_PROMPT_ADVANCED_FIELD_ALIAS = "regional_prompt"

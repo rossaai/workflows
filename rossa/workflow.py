@@ -160,8 +160,8 @@ class BaseWorkflow(ABC):
 
     def to_modal(
         self,
-        modal_stub_name: str = None,
-        modal_stub_args: str = "",
+        modal_app_name: str = None,
+        modal_app_args: str = "",
         custom_class_code: str = None,
         dockerfile_path: str = None,
         force_build: bool = False,
@@ -171,12 +171,12 @@ class BaseWorkflow(ABC):
         Generates the necessary code or file content to deploy the workflow on Modal's cloud infrastructure.
 
         This method creates a script that can be used to deploy your workflow on Modal. It takes several
-        arguments to customize the deployment settings, such as the stub name, additional stub arguments,
+        arguments to customize the deployment settings, such as the app name, additional app arguments,
         and custom class code.
 
         Args:
-            modal_stub_name (str): The name of the Modal stub for the workflow.
-            modal_stub_args (str, optional): Additional arguments to pass to the Modal stub.
+            modal_app_name (str): The name of the Modal app for the workflow.
+            modal_app_args (str, optional): Additional arguments to pass to the Modal app.
             custom_class_code (str, optional): Custom class code to include in the generated script.
             dockerfile_path (str, optional): Path to save the generated Dockerfile. If not provided, a temporary file will be used.
             return_code_and_dockerfile (bool, optional): Whether to return the generated code and Dockerfile content as a dictionary.
@@ -192,8 +192,8 @@ class BaseWorkflow(ABC):
             import os
 
             deployment_code = Workflow().generate_modal_deployment_code(
-                modal_stub_name="image-to-threed-triposr",
-                modal_stub_args=\"""
+                modal_app_name="image-to-threed-triposr",
+                modal_app_args=\"""
                 gpu=modal.gpu.A10G(),
                 allow_concurrent_inputs=4,
                 container_idle_timeout=240,
@@ -207,8 +207,8 @@ class BaseWorkflow(ABC):
         ```
         """
 
-        # It uses the class name as the default stub name instead of `self.schema()["title"]` due to Modal naming constraints.
-        modal_stub_name = modal_stub_name or clean_and_format_string(
+        # It uses the class name as the default app name instead of `self.schema()["title"]` due to Modal naming constraints.
+        modal_app_name = modal_app_name or clean_and_format_string(
             self.schema()["title"]
         )
         dockerfile_path = dockerfile_path or "Dockerfile"
@@ -246,7 +246,7 @@ modal_image = modal.Image.from_dockerfile(
     force_build={force_build}
 )
     
-stub = modal.Stub({modal_stub_name!r})
+app = modal.App({modal_app_name!r})
 
 workflow_instance = {self.__class__.__name__}()\n"""
         else:
@@ -254,18 +254,16 @@ workflow_instance = {self.__class__.__name__}()\n"""
 import modal
 import inspect
 
-stub = modal.Stub({modal_stub_name!r})
-
 workflow_instance = {self.__class__.__name__}()\n"""
 
         download_method = ""
 
-        stub_args = "image=modal_image" if self.image else ""
+        app_args = "image=modal_image" if self.image else ""
 
-        if self.image and modal_stub_args:
-            stub_args += ",\n"
+        if self.image and modal_app_args:
+            app_args += ",\n"
 
-        stub_args += modal_stub_args if modal_stub_args else ""
+        app_args += modal_app_args if modal_app_args else ""
 
         if not is_same_download_method:
             download_method = """
@@ -311,7 +309,7 @@ import uuid
 from rossa import Response, Notification
 import tempfile
 
-@stub.local_entrypoint()
+@app.local_entrypoint()
 def run_modal_workflow():
     examples = {json.dumps(formatted_examples)}
     
@@ -338,8 +336,8 @@ def run_modal_workflow():
         deployment_code = f"""{class_code}
 {modal_import}
 
-@stub.cls(
-    {stub_args}
+@app.cls(
+    {app_args}
 )
 class ModalWorkflow:
 {download_method}
