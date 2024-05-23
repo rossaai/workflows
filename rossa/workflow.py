@@ -1,31 +1,14 @@
-import json
-from typing import Any, Dict, Generator, List, Optional, Union
+from typing import Any, Dict, List, Union
+
+from .workflow_blueprint import WorkflowBlueprint
+
+
+from .format_utils import clean_and_format_string
+
+from .adapters.local import LocalWorkflowAdapter
+from .adapters.modal import ModalWorkflowAdapter
 
 from .responses import Notification, Response
-from .image import Image
-from .fields import FieldType, Option
-from abc import ABC, abstractmethod
-from pydantic import Extra, validate_arguments
-from pydantic.fields import FieldInfo
-import inspect
-import re
-from typing import Optional
-
-
-def clean_and_format_string(input_str: str) -> Optional[str]:
-    # Replace spaces with hyphens
-    input_str = input_str.replace(" ", "-")
-
-    # Convert the string to lowercase
-    input_str = input_str.lower()
-
-    # Remove all characters that are not alphanumeric, hyphens, or underscores
-    cleaned_str = re.sub(r"[^a-z0-9-_]", "", input_str)
-
-    # Clamp the string to a maximum length of 64 characters
-    clamped_str = cleaned_str[:64]
-
-    return clamped_str
 
 
 ReturnResults = Union[
@@ -34,129 +17,7 @@ ReturnResults = Union[
 ]
 
 
-class BaseWorkflow(ABC):
-    image: Optional[Image] = None
-    title: str
-    version: str
-    description: str
-    examples: List[Dict[str, Any]] = []
-
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-
-        # Get the original signature of the cls.run method
-        cls.original_run = cls.run
-        original_signature = inspect.signature(cls.original_run)
-
-        # Apply the validate_arguments decorator to the original run method
-        validated_run = validate_arguments(
-            cls.original_run, config=dict(extra=Extra.ignore)
-        )
-
-        # Ignore extra arguments
-        def run_wrapper(self, *args, **kwargs):
-            # Extract only the arguments present in the original signature
-            valid_kwargs = {
-                k: v for k, v in kwargs.items() if k in original_signature.parameters
-            }
-
-            return validated_run(self, *args, **valid_kwargs)
-
-        cls.run = run_wrapper
-
-    def schema(self):
-        # validate title, version, description
-        if not isinstance(self.title, str):
-            raise ValueError("title must be a string")
-        if not isinstance(self.version, str):
-            raise ValueError("version must be a string")
-        if not isinstance(self.description, str):
-            raise ValueError("description must be a string")
-
-        fields = []
-
-        # check if original_run is in the class and if it is a function
-        # else use the run method
-        run_fn = (
-            self.original_run
-            if hasattr(self, "original_run") and callable(self.original_run)
-            else self.run
-        )
-
-        parameters = inspect.signature(run_fn).parameters
-
-        for name, param in parameters.items():
-            default = param.default
-
-            is_not_valid_field = default == inspect.Parameter.empty or not isinstance(
-                default, FieldInfo
-            )
-
-            if is_not_valid_field:
-                continue
-
-            extra = (
-                default.extra
-                if hasattr(default, "extra")
-                else (
-                    default.json_schema_extra
-                    if hasattr(default, "json_schema_extra")
-                    else {}
-                )
-            )
-            is_not_valid_field = "type" not in default.extra and default.extra[
-                "type"
-            ] not in set(FieldType)
-
-            if is_not_valid_field:
-                continue
-
-            options = []
-
-            # validate if .options is a list and is in default.extra class
-            if "options" in default.extra and isinstance(
-                default.extra["options"], list
-            ):
-                for option in default.extra["options"]:
-                    if isinstance(option, Option):
-                        options.append(option.dict(by_alias=True))
-
-            fields.append(
-                {
-                    "name": name,
-                    "title": default.title,
-                    "type": default.extra["type"],
-                    "description": default.description,
-                    "options": options,
-                }
-            )
-
-        new_schema = {
-            "title": self.title,
-            "version": self.version,
-            "description": self.description,
-            "fields": fields,
-            "examples": self.examples if isinstance(self.examples, list) else [],
-        }
-
-        return new_schema
-
-    def download(self):
-        pass
-
-    def load(self):
-        pass
-
-    @abstractmethod
-    def run(self) -> Union[
-        Generator[
-            ReturnResults,
-            None,
-            None,
-        ],
-        ReturnResults,
-    ]:
-        pass
+class BaseWorkflow(WorkflowBlueprint):
 
     def to_modal(
         self,
@@ -191,7 +52,7 @@ class BaseWorkflow(ABC):
             import modal
             import os
 
-            deployment_code = Workflow().generate_modal_deployment_code(
+            deployment_code = Workflow().to_modal(
                 modal_app_name="image-to-threed-triposr",
                 modal_app_args=\"""
                 gpu=modal.gpu.A10G(),
@@ -211,146 +72,23 @@ class BaseWorkflow(ABC):
         modal_app_name = modal_app_name or clean_and_format_string(
             self.schema()["title"]
         )
-        dockerfile_path = dockerfile_path or "Dockerfile"
 
-        if self.image:
-            dockerfile_content = self.image.to_dockerfile()
+        adapter = ModalWorkflowAdapter()
 
-            if not return_code_and_dockerfile:
-                import tempfile
-
-                dockerfile_path = tempfile.mktemp()
-                with open(dockerfile_path, "w") as f:
-                    f.write(dockerfile_content)
-
-        if custom_class_code is None:
-            with open(inspect.getsourcefile(self.__class__), "r") as f:
-                class_code = f.read()
-        else:
-            class_code = custom_class_code
-
-        is_same_download_method = inspect.getsource(self.download) == inspect.getsource(
-            BaseWorkflow.download
-        )
-        is_same_load_method = inspect.getsource(self.load) == inspect.getsource(
-            BaseWorkflow.load
+        return adapter.convert_workflow(
+            self,
+            modal_app_name,
+            modal_app_args,
+            custom_class_code,
+            dockerfile_path,
+            force_build,
+            return_code_and_dockerfile,
         )
 
-        if self.image:
-            modal_import = f"""
-import modal
-import inspect
+    def to_local(
+        self,
+        custom_class_code: str = None,
+    ) -> str:
+        adapter = LocalWorkflowAdapter()
 
-modal_image = modal.Image.from_dockerfile(
-    {dockerfile_path!r}, 
-    force_build={force_build}
-)
-    
-app = modal.App({modal_app_name!r})
-
-workflow_instance = {self.__class__.__name__}()\n"""
-        else:
-            modal_import = f"""
-import modal
-import inspect
-
-workflow_instance = {self.__class__.__name__}()\n"""
-
-        download_method = ""
-
-        app_args = "image=modal_image" if self.image else ""
-
-        if self.image and modal_app_args:
-            app_args += ",\n"
-
-        app_args += modal_app_args if modal_app_args else ""
-
-        if not is_same_download_method:
-            download_method = """
-    @modal.build()
-    def download(self):
-        return workflow_instance.download()
-"""
-
-        load_method = ""
-        if not is_same_load_method:
-            load_method = """
-    @modal.enter()
-    def load(self):
-        return workflow_instance.load()
-"""
-
-        run_method = """
-    @modal.method(is_generator=True)
-    def run(self, *args, **kwargs):
-        result = workflow_instance.run(*args, **kwargs)
-
-        if inspect.isgenerator(result):
-            for x in result:
-                yield x
-        else:
-            yield result
-"""
-
-        local_examples = ""
-
-        if isinstance(self.examples, list):
-            formatted_examples = [
-                {
-                    **example,
-                    "title": clean_and_format_string(example["title"]),
-                }
-                for example in self.examples
-            ]
-
-            local_examples = f"""
-import os
-import uuid
-from rossa import Response, Notification
-import tempfile
-
-@app.local_entrypoint()
-def run_modal_workflow():
-    examples = {json.dumps(formatted_examples)}
-    
-    folder = tempfile.mkdtemp()
-    
-    for example in examples:
-        folder_path = os.path.join(folder, example["title"])
-        os.makedirs(folder_path, exist_ok=True)
-        
-        results = ModalWorkflow.run.remote_gen(**example["data"])
-
-        for result in results:
-            if isinstance(result, Response):
-                file_name = uuid.uuid4().hex
-                path = os.path.join(folder_path, file_name)
-                path = os.path.abspath(path)
-                result.save(path)
-                print("Saved (" + result.content_type + "): " + path)
-            elif isinstance(result, Notification):
-                print(result.dict())
-
-"""
-
-        deployment_code = f"""{class_code}
-{modal_import}
-
-@app.cls(
-    {app_args}
-)
-class ModalWorkflow:
-{download_method}
-{load_method}
-{run_method}
-{local_examples}
-"""
-
-        if return_code_and_dockerfile:
-            return {
-                "code": deployment_code,
-                "dockerfile": dockerfile_content,
-                "dockerfile_path": dockerfile_path,
-            }
-
-        return deployment_code
+        return adapter.convert_workflow(self, custom_class_code=custom_class_code)

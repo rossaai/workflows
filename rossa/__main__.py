@@ -7,19 +7,14 @@ import tempfile
 from .workflow import BaseWorkflow
 
 
-SUPPORTED_PROVIDERS = ["modal"]
+SUPPORTED_PROVIDERS = ["modal", "local"]
 
 SUPPORTED_COMMANDS = ["build", "run"]
 
 SUPPORTED_MODAL_GPUS = ["T4", "L4", "A100", "A10G", "H100"]
 
 
-def create_modal_file(
-    code: str,
-    app_name: str,
-    gpu: str,
-    force_build: bool = False,
-):
+def get_workflow_class(code: str):
 
     with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".py") as temp_file:
         temp_file.write(code)
@@ -49,40 +44,67 @@ def create_modal_file(
     if workflow_class:
         workflow_instance = workflow_class()  # type: BaseWorkflow
 
-        temp_dir = tempfile.mkdtemp()
-
-        dockerfile_path = os.path.join(temp_dir, "Dockerfile")
-        code_path = os.path.join(temp_dir, "deployment.py")
-
-        code = workflow_instance.to_modal(
-            modal_app_name=app_name,
-            modal_app_args=f"gpu=modal.gpu.{gpu}()" if gpu else "",
-            custom_class_code=code,
-            dockerfile_path=dockerfile_path,
-            return_code_and_dockerfile=True,
-            force_build=force_build,
-        )
-
-        files = [
-            {"path": dockerfile_path, "content": code["dockerfile"]},
-            {"path": code_path, "content": code["code"], "primary": True},
-        ]
-
-        for file in files:
-            with open(file["path"], "w") as f:
-                f.write(file["content"])
-
-        primary_file = next(file for file in files if file.get("primary", False))
-
-        if primary_file is None:
-            raise Exception("Primary file not found")
-
-        primary_file_path = os.path.join(temp_dir, primary_file["path"])
-
-        return primary_file_path
-
+        return workflow_instance
     else:
         raise Exception("No workflow class found in the provided code")
+
+
+def create_modal_file(
+    code: str,
+    app_name: str,
+    gpu: str,
+    force_build: bool = False,
+):
+    workflow_instance = get_workflow_class(code)  # type: BaseWorkflow
+
+    temp_dir = tempfile.mkdtemp()
+
+    dockerfile_path = os.path.join(temp_dir, "Dockerfile")
+    code_path = os.path.join(temp_dir, "deployment.py")
+
+    code = workflow_instance.to_modal(
+        modal_app_name=app_name,
+        modal_app_args=f"gpu=modal.gpu.{gpu}()" if gpu else "",
+        custom_class_code=code,
+        dockerfile_path=dockerfile_path,
+        return_code_and_dockerfile=True,
+        force_build=force_build,
+    )
+
+    files = [
+        {"path": dockerfile_path, "content": code["dockerfile"]},
+        {"path": code_path, "content": code["code"], "primary": True},
+    ]
+
+    for file in files:
+        with open(file["path"], "w") as f:
+            f.write(file["content"])
+
+    primary_file = next(file for file in files if file.get("primary", False))
+
+    if primary_file is None:
+        raise Exception("Primary file not found")
+
+    primary_file_path = os.path.join(temp_dir, primary_file["path"])
+
+    return primary_file_path
+
+
+def create_local_file(code: str):
+    workflow_instance = get_workflow_class(code)  # type: BaseWorkflow
+
+    temp_dir = tempfile.mkdtemp()
+
+    code = workflow_instance.to_local(
+        custom_class_code=code,
+    )
+
+    code_path = os.path.join(temp_dir, "local.py")
+
+    with open(code_path, "w") as f:
+        f.write(code)
+
+    return code_path
 
 
 def main():
@@ -118,8 +140,25 @@ def main():
             run_modal(args.filepath, args.app_name, args.gpu, args.force_build)
         elif args.command == "build":
             build_modal(args.filepath, args.app_name, args.gpu, args.force_build)
+    if args.provider == "local":
+        if args.command == "run":
+            run_local(args.filepath)
+        else:
+            parser.print_help()
     else:
         parser.print_help()
+
+
+def run_local(filepath: str):
+    # Logic to execute the "run" command for local
+    with open(filepath, "r") as f:
+        code = f.read()
+
+    local_file = create_local_file(code)
+
+    print(f"Running local with file: {local_file}")
+
+    # os.system(f"python {local_file}")
 
 
 def run_modal(filepath: str, app_name: str, gpu: str, force_build: bool):
