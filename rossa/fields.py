@@ -56,7 +56,7 @@ def BaseField(
     ):
         raise Exception("default_generator_type must be a GeneratorType.")
 
-    # valaliasate if type is in FieldType
+    # validate if type is in FieldType
     if type not in set(FieldType):
         raise Exception("Field type must be in FieldType.")
 
@@ -82,6 +82,9 @@ def TextField(
     description: str,
     placeholder: str = "",
     alias: Optional[str] = None,
+    default: str = "",
+    default_generator_type: Optional[GeneratorType] = None,
+    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
     **kwargs,
 ):
     return BaseField(
@@ -90,6 +93,9 @@ def TextField(
         title=title,
         description=description,
         placeholder=placeholder,
+        default=default,
+        default_generator_type=default_generator_type,
+        show_if=show_if,
         **kwargs,
     )
 
@@ -100,6 +106,8 @@ def TextAreaField(
     alias: Optional[str] = None,
     placeholder: str = "",
     show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
+    default: str = "",
+    default_generator_type: Optional[GeneratorType] = None,
     **kwargs,
 ):
     return BaseField(
@@ -109,6 +117,8 @@ def TextAreaField(
         description=description,
         placeholder=placeholder,
         show_if=show_if,
+        default=default,
+        default_generator_type=default_generator_type,
         **kwargs,
     )
 
@@ -122,7 +132,9 @@ def NumberField(
     max: Optional[float] = None,
     step: Optional[float] = None,
     format_type: FormatType = FormatType.DECIMAL,
+    default: Optional[float] = 0.0,
     default_generator_type: Optional[GeneratorType] = None,
+    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
     **kwargs,
 ):
     return BaseField(
@@ -135,7 +147,9 @@ def NumberField(
         le=max,
         step=step,
         format_type=format_type,
+        default=default,
         default_generator_type=default_generator_type,
+        show_if=show_if,
         **kwargs,
     )
 
@@ -146,10 +160,11 @@ def IntegerField(
     alias: Optional[str] = None,
     placeholder: str = "",
     step: int = 1,
-    default: Optional[int] = None,
+    default: Optional[int] = 0,
     min: Optional[int] = None,
     max: Optional[int] = None,
     default_generator_type: Optional[GeneratorType] = None,
+    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
     **kwargs,
 ):
     step = int(step)
@@ -166,6 +181,7 @@ def IntegerField(
         format_type=FormatType.INTEGER,
         default_generator_type=default_generator_type,
         default=default,
+        show_if=show_if,
         **kwargs,
     )
 
@@ -179,6 +195,9 @@ def SliderField(
     step: Optional[float] = None,
     placeholder: str = "",
     format_type: FormatType = FormatType.DECIMAL,
+    default: Optional[float] = None,
+    default_generator_type: Optional[GeneratorType] = None,
+    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
     **kwargs,
 ):
     if min > max:
@@ -188,10 +207,10 @@ def SliderField(
         raise Exception("Step value must be greater than 0.")
 
     if min is None:
-        raise Exception("Minimum value must be provaliased.")
+        raise Exception("Minimum value must be provided.")
 
     if max is None:
-        raise Exception("Maximum value must be provaliased.")
+        raise Exception("Maximum value must be provided.")
 
     return BaseField(
         alias=alias,
@@ -203,6 +222,9 @@ def SliderField(
         le=max,
         step=step,
         format_type=format_type,
+        default=default,
+        default_generator_type=default_generator_type,
+        show_if=show_if,
         **kwargs,
     )
 
@@ -215,6 +237,9 @@ def PercentageSliderField(
     min: float = 0,
     max: float = 100,
     step: float = 1,
+    default: Optional[float] = 0.0,
+    default_generator_type: Optional[GeneratorType] = None,
+    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
     **kwargs,
 ):
     return SliderField(
@@ -226,6 +251,9 @@ def PercentageSliderField(
         max=max,
         step=step,
         format_type=FormatType.PERCENTAGE,
+        default=default,
+        default_generator_type=default_generator_type,
+        show_if=show_if,
         **kwargs,
     )
 
@@ -236,6 +264,8 @@ def CheckboxField(
     alias: Optional[str] = None,
     placeholder: str = "",
     default: bool = False,
+    default_generator_type: Optional[GeneratorType] = None,
+    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
     **kwargs,
 ):
     return BaseField(
@@ -245,6 +275,8 @@ def CheckboxField(
         description=description,
         placeholder=placeholder,
         default=default,
+        default_generator_type=default_generator_type,
+        show_if=show_if,
         **kwargs,
     )
 
@@ -256,6 +288,8 @@ def SelectField(
     alias: Optional[str] = None,
     placeholder: str = "",
     default: Optional[str] = None,
+    default_generator_type: Optional[GeneratorType] = None,
+    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
     **kwargs,
 ):
     return BaseField(
@@ -266,5 +300,7 @@ def SelectField(
         placeholder=placeholder,
         options=options,
         default=default,
+        default_generator_type=default_generator_type,
+        show_if=show_if,
         **kwargs,
     )
