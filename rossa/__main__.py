@@ -96,7 +96,7 @@ def main():
     parser.add_argument("filepath", type=str, help="The path to the file")
 
     # Optional arguments for 'modal run'
-    parser.add_argument("--app", type=str, help="Use app name")
+    parser.add_argument("--app-name", type=str, help="Use app name")
 
     parser.add_argument(
         "--gpu",
@@ -115,9 +115,9 @@ def main():
 
     if args.provider == "modal":
         if args.command == "run":
-            run_modal(args.filepath, args.app, args.gpu, args.force_build)
+            run_modal(args.filepath, args.app_name, args.gpu, args.force_build)
         elif args.command == "build":
-            build_modal(args.filepath, args.app, args.gpu, args.force_build)
+            build_modal(args.filepath, args.app_name, args.gpu, args.force_build)
     else:
         parser.print_help()
 
@@ -127,7 +127,7 @@ def run_modal(filepath: str, app_name: str, gpu: str, force_build: bool):
     with open(filepath, "r") as f:
         code = f.read()
 
-    modal_file = create_modal_file(code, app_name, gpu)
+    modal_file = create_modal_file(code, app_name, gpu, force_build)
 
     print(f"Running modal with file: {modal_file}")
 
