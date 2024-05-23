@@ -60,13 +60,14 @@ def BaseField(
     if type not in set(FieldType):
         raise Exception("Field type must be in FieldType.")
 
+    def default_factory():
+        if default_generator_type:
+            return default_generator_type.generate(kwargs.get("ge"), kwargs.get("le"))
+        return None
+
     return PydanticField(
         alias=alias,
-        default_factory=(
-            default_generator_type.generate(kwargs.get("ge"), kwargs.get("le"))
-            if default_generator_type
-            else None
-        ),
+        default_factory=(default_factory if default_generator_type else None),
         title=title,
         type=type,
         description=description,
