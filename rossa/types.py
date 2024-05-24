@@ -127,9 +127,7 @@ class Content(BaseModel):
     contents: Dict[ContentType, Union[str, bytes, Image.Image, np.ndarray]] = Field(
         description="Dictionary mapping ContentType to content as str (URL, data URL-base64, or path), bytes, PIL Image, or NumPy array"
     )
-    control_type: ControlType = Field(
-        default=ControlType.INPUT, description="Required control type"
-    )
+    control_type: ControlType
 
     class Config:
         arbitrary_types_allowed = True
