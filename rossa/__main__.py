@@ -133,7 +133,7 @@ def main():
         help="Force the build of the docker image",
     )
 
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
 
     if args.provider == "modal":
         if args.command == "run":
