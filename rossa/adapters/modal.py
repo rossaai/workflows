@@ -176,7 +176,7 @@ def run_modal_workflow():
                 path = os.path.join(folder_path, file_name)
                 path = os.path.abspath(path)
                 result.save(path)
-                print("Saved (" + result.content_type + "): " + path)
+                print("Saved (" + result.content_type + "): file://" + path)
             elif isinstance(result, Notification):
                 print(result.dict())
 
