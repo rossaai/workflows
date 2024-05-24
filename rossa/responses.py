@@ -7,66 +7,66 @@ import numpy as np
 
 
 class BaseResponse(Content):
-    pass
+    content_type: ContentType
 
-
-class BaseTextResponse(BaseResponse):
     def to_response(self) -> FastAPIResponse:
-        content = self.contents.get(ContentType.TEXT)
-        return FastAPIResponse(content=content, media_type="text/plain")
+        return super().to_response(self.content_type)
 
     def save(self, file_path: str):
-        content = self.contents.get(ContentType.TEXT)
-        with open(file_path, "w") as file:
-            file.write(content)
+        return super().save(self.content_type, file_path)
 
 
 def ImageResponse(
     content: Union[str, bytes, Image.Image, np.ndarray],
-    control_type: Optional[ControlType] = None,
+    control_type: ControlType = ControlType.INPUT,
 ):
     return BaseResponse(
         contents={ContentType.IMAGE: content},
+        content_type=ContentType.IMAGE,
         control_type=control_type,
     )
 
 
 def VideoResponse(
     content: Union[str, bytes],
-    control_type: Optional[ControlType] = None,
+    control_type: ControlType = ControlType.INPUT,
 ):
     return BaseResponse(
         contents={ContentType.VIDEO: content},
+        content_type=ContentType.VIDEO,
         control_type=control_type,
     )
 
 
 def AudioResponse(
     content: Union[str, bytes],
-    control_type: Optional[ControlType] = None,
+    control_type: ControlType = ControlType.INPUT,
 ):
     return BaseResponse(
         contents={ContentType.AUDIO: content},
+        content_type=ContentType.AUDIO,
         control_type=control_type,
     )
 
 
 def ThreeDResponse(
     content: Union[str, bytes],
-    control_type: Optional[ControlType] = None,
+    control_type: ControlType = ControlType.INPUT,
 ):
     return BaseResponse(
         contents={ContentType.THREE_D: content},
+        content_type=ContentType.THREE_D,
         control_type=control_type,
     )
 
 
 def TextResponse(
     content: str,
-    control_type: Optional[ControlType] = None,
+    control_type: ControlType = ControlType.INPUT,
 ):
-    return BaseTextResponse(
+    return BaseResponse(
         contents={ContentType.TEXT: content},
+        content_type=ContentType.TEXT,
         control_type=control_type,
     )
 

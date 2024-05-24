@@ -162,16 +162,13 @@ class Content(BaseModel):
                 media_type = header.split(":")[1].split(";")[0]
                 content = base64.b64decode(encoded)
                 return FastAPIResponse(content=content, media_type=media_type)
-            else:
-                if os.path.isfile(content):
-                    with open(content, "rb") as file:
-                        content_data = file.read()
-                        media_type, _ = mimetypes.guess_type(content)
-                        return FastAPIResponse(
-                            content=content_data, media_type=media_type
-                        )
-                else:
-                    raise ValueError(f"File not found: {content}")
+            elif os.path.isfile(content):
+                with open(content, "rb") as file:
+                    content_data = file.read()
+                    media_type, _ = mimetypes.guess_type(content)
+                    return FastAPIResponse(content=content_data, media_type=media_type)
+            elif content_type == ContentType.TEXT:
+                return FastAPIResponse(content=content, media_type="text/plain")
         elif isinstance(content, bytes):
             return FastAPIResponse(
                 content=content, media_type="application/octet-stream"
@@ -203,9 +200,11 @@ class Content(BaseModel):
                         header, encoded = content.split(",", 1)
                         content_data = base64.b64decode(encoded)
                         file.write(content_data)
-                    else:
+                    elif os.path.isfile(content):
                         with open(content, "rb") as src_file:
                             file.write(src_file.read())
+                    elif content_type == ContentType.TEXT:
+                        file.write(content)
                 elif isinstance(content, bytes):
                     file.write(content)
 
