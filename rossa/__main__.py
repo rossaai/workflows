@@ -2,6 +2,7 @@ import argparse
 import importlib
 import inspect
 import os
+import subprocess
 import tempfile
 
 from .workflow import BaseWorkflow
@@ -135,12 +136,16 @@ def main():
 
     args, _ = parser.parse_known_args()
 
+    os.environ["PROVIDER"] = args.provider
+
     if args.provider == "modal":
+        os.environ["IS_MODAL"] = "true"
         if args.command == "run":
             run_modal(args.filepath, args.app_name, args.gpu, args.force_build)
         elif args.command == "build":
             build_modal(args.filepath, args.app_name, args.gpu, args.force_build)
     if args.provider == "local":
+        os.environ["IS_LOCAL"] = "true"
         if args.command == "run":
             run_local(args.filepath)
         else:
@@ -158,7 +163,7 @@ def run_local(filepath: str):
 
     print(f"Running local with file: {local_file}")
 
-    os.system(f"python {local_file}")
+    subprocess.run(f"python {local_file}", shell=True, env=os.environ)
 
 
 def run_modal(filepath: str, app_name: str, gpu: str, force_build: bool):
@@ -170,7 +175,7 @@ def run_modal(filepath: str, app_name: str, gpu: str, force_build: bool):
 
     print(f"Running modal with file: {modal_file}")
 
-    os.system(f"modal run {modal_file}")
+    subprocess.run(f"modal run {modal_file}", shell=True, env=os.environ)
 
 
 def build_modal(filepath: str, app_name: str, gpu: str, force_build: bool):
@@ -181,7 +186,7 @@ def build_modal(filepath: str, app_name: str, gpu: str, force_build: bool):
 
     print(f"Building modal with file: {modal_file}")
 
-    os.system(f"modal build {modal_file}")
+    subprocess.run(f"modal build {modal_file}", shell=True, env=os.environ)
 
 
 if __name__ == "__main__":
