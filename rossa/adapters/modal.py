@@ -160,7 +160,7 @@ import tempfile
 
 @app.local_entrypoint()
 def run_modal_workflow():
-    examples = {json.dumps(formatted_examples)}
+    examples = {json.loads(json.dumps(formatted_examples))}
     
     folder = tempfile.mkdtemp()
     

@@ -52,7 +52,7 @@ from rossa import Response, Notification
 import tempfile
 
 def run_workflow_examples():
-    examples = {json.dumps(formatted_examples)}
+    examples = {json.loads(json.dumps(formatted_examples))}
     
     folder = tempfile.mkdtemp()
     
