@@ -23,6 +23,9 @@ import numpy as np
 class ControlType(str, Enum):
     INPUT = "input"
     MASK = "mask"
+    CONTROL_UPSCALE = "control-upscale"
+    CONTROL_FACE_DETAILER = "control-face-detailer"
+    CONTROL_SEAMLESS_PATTERN = "control-seamless-pattern"
     CONTROL_LINE_ART = "control-lineart"
     CONTROL_CANNY = "control-canny"
     CONTROL_POSE = "control-pose"

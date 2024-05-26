@@ -164,6 +164,24 @@ class RegionalPromptControl(BaseControl):
     ]
 
 
+class UpscaleControl(BaseControl):
+    value: ControlType = ControlType.CONTROL_UPSCALE
+    title: str = "Upscale"
+    description: str = "Upscale the generated image."
+
+
+class FaceDetailerControl(BaseControl):
+    value: ControlType = ControlType.CONTROL_FACE_DETAILER
+    title: str = "Face Detailer"
+    description: str = "Enhance the details of the face in the generated image."
+
+
+class SeamlessPatternControl(BaseControl):
+    value: ControlType = ControlType.CONTROL_SEAMLESS_PATTERN
+    title: str = "Seamless Pattern"
+    description: str = "Generate a seamless pattern from the input image."
+
+
 # IMAGE CONTROLS
 class InputImageControl(InputControl):
     title: str = "Source Image"
@@ -243,3 +261,24 @@ class RegionalPromptImageControl(RegionalPromptControl):
     description: str = "Mark the areas for applying regional prompts."
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [MaskControlContent()]
+
+
+class UpscaleImageControl(UpscaleControl):
+    title: str = "Upscale"
+    description: str = "Increase the resolution of the generated image."
+    content_type: ContentType = ContentType.IMAGE
+    supported_contents: List[ControlContent] = [ImageControlContent()]
+
+
+class FaceDetailerImageControl(FaceDetailerControl):
+    title: str = "Face Detailer"
+    description: str = "Enhance the details of the face in the generated image."
+    content_type: ContentType = ContentType.IMAGE
+    supported_contents: List[ControlContent] = [ImageControlContent()]
+
+
+class SeamlessPatternImageControl(SeamlessPatternControl):
+    title: str = "Seamless Pattern"
+    description: str = "Generate a seamless pattern from the input image."
+    content_type: ContentType = ContentType.IMAGE
+    supported_contents: List[ControlContent] = [ImageControlContent()]

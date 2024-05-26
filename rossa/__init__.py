@@ -58,6 +58,12 @@ from .controls import (
     DepthImageControl,
     RegionalPromptControl,
     RegionalPromptImageControl,
+    UpscaleControl,
+    UpscaleImageControl,
+    FaceDetailerControl,
+    FaceDetailerImageControl,
+    SeamlessPatternControl,
+    SeamlessPatternImageControl,
 )
 
 from .performances import (
@@ -165,6 +171,12 @@ __all__ = [
     "DepthImageControl",
     "RegionalPromptControl",
     "RegionalPromptImageControl",
+    "UpscaleControl",
+    "UpscaleImageControl",
+    "FaceDetailerControl",
+    "FaceDetailerImageControl",
+    "SeamlessPatternControl",
+    "SeamlessPatternImageControl",
     # Performances
     "PerformanceType",
     "BasePerformance",
