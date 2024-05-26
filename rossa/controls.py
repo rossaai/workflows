@@ -176,10 +176,10 @@ class FaceDetailerControl(BaseControl):
     description: str = "Enhance the details of the face in the generated image."
 
 
-class SeamlessPatternControl(BaseControl):
+class SeamlessTailingControl(BaseControl):
     value: ControlType = ControlType.CONTROL_SEAMLESS_PATTERN
-    title: str = "Seamless Pattern"
-    description: str = "Generate a seamless pattern from the input image."
+    title: str = "Seamless tailing"
+    description: str = "Generate a seamless tailing from the input image."
 
 
 # IMAGE CONTROLS
@@ -277,8 +277,8 @@ class FaceDetailerImageControl(FaceDetailerControl):
     supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
-class SeamlessPatternImageControl(SeamlessPatternControl):
-    title: str = "Seamless Pattern"
-    description: str = "Generate a seamless pattern from the input image."
+class SeamlessTailingImageControl(SeamlessTailingControl):
+    title: str = "Seamless Tailing"
+    description: str = "Generate a seamless tailing from the input image."
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [ImageControlContent()]

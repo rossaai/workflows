@@ -62,8 +62,8 @@ from .controls import (
     UpscaleImageControl,
     FaceDetailerControl,
     FaceDetailerImageControl,
-    SeamlessPatternControl,
-    SeamlessPatternImageControl,
+    SeamlessTailingControl,
+    SeamlessTailingImageControl,
 )
 
 from .performances import (
@@ -175,8 +175,8 @@ __all__ = [
     "UpscaleImageControl",
     "FaceDetailerControl",
     "FaceDetailerImageControl",
-    "SeamlessPatternControl",
-    "SeamlessPatternImageControl",
+    "SeamlessTailingControl",
+    "SeamlessTailingImageControl",
     # Performances
     "PerformanceType",
     "BasePerformance",
