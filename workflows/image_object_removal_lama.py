@@ -6,7 +6,7 @@ from rossa import (
     BaseWorkflow,
     ControlsField,
     Image,
-    InputImageControl,
+    ReferenceImageControl,
     ControlValue,
     ImageResponse,
     next_control,
@@ -63,7 +63,7 @@ class Workflow(BaseWorkflow):
         self,
         controls: List[ControlValue] = ControlsField(
             options=[
-                InputImageControl(
+                ReferenceImageControl(
                     supported_contents=[
                         ImageControlContent(),
                         MaskControlContent(),
@@ -72,7 +72,7 @@ class Workflow(BaseWorkflow):
             ]
         ),
     ):
-        image = next_control(controls, InputImageControl())
+        image = next_control(controls, ReferenceImageControl())
 
         image = image.to_pil_image(ContentType.IMAGE).convert("RGB")
 

@@ -4,7 +4,7 @@ from rossa import (
     BaseWorkflow,
     ControlsField,
     ControlValue,
-    InputImageControl,
+    ReferenceImageControl,
     ThreeDResponse,
     next_control,
 )
@@ -125,13 +125,13 @@ class Workflow(BaseWorkflow):
 
     def run(
         self,
-        controls: List[ControlValue] = ControlsField(options=[InputImageControl()]),
+        controls: List[ControlValue] = ControlsField(options=[ReferenceImageControl()]),
         resolution: int = 256,
         remove_background: bool = True,
         foreground_ratio: float = 0.85,
         format: str = "glb",
     ):
-        image = next_control(controls, InputImageControl())
+        image = next_control(controls, ReferenceImageControl())
 
         image = image.to_pil_image()
 

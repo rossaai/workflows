@@ -94,7 +94,7 @@ class BaseControl(Option):
         return values
 
 
-class InputControl(BaseControl):
+class ReferenceControl(BaseControl):
     value: ControlType = ControlType.INPUT
     title: str = "Source"
     description: str = "Input for generation."
@@ -176,109 +176,128 @@ class FaceDetailerControl(BaseControl):
     description: str = "Enhance the details of the face in the generated image."
 
 
-class SeamlessTailingControl(BaseControl):
+class SeamlessTilingControl(BaseControl):
     value: ControlType = ControlType.CONTROL_SEAMLESS_PATTERN
-    title: str = "Seamless tailing"
+    title: str = "Seamless Tiling"
     description: str = "Generate a seamless tailing from the input image."
 
 
-# IMAGE CONTROLS
-class InputImageControl(InputControl):
-    title: str = "Source Image"
-    description: str = "Provide an input image for Image generation."
-    content_type: ContentType = ContentType.IMAGE
-    supported_contents: List[ControlContent] = [ImageControlContent()]
-
-
-class MaskImageControl(MaskControl):
-    title: str = "Mask"
-    description: str = "Define areas to be modified for Image generation."
-    content_type: ContentType = ContentType.IMAGE
-    supported_contents: List[ControlContent] = [MaskControlContent()]
-
-
-class CannyImageControl(CannyControl):
-    title: str = "Edge Detection"
-    description: str = "Emphasize edges for sketch-to-image generation."
-    content_type: ContentType = ContentType.IMAGE
-    supported_contents: List[ControlContent] = [ImageControlContent()]
-
-
-class LineArtImageControl(LineArtControl):
-    title: str = "Line Art Guide"
+class RelightingControl(BaseControl):
+    value: ControlType = ControlType.CONTROL_RELIGHTING
+    title: str = "Relighting"
     description: str = (
-        "Emphasize lines for constraining the generated image. Very useful for sketch-to-image generation."
+        "Change the illumination or weather conditions of the generated scene."
+    )
+
+
+# IMAGE CONTROLSc
+class ReferenceImageControl(ReferenceControl):
+    title: str = "Reference"
+    description: str = (
+        "Guides the image generation process. Lower values blend the colors more, while higher values reduce the influence of the reference image."
     )
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
-class PoseImageControl(PoseControl):
+class MaskControl(MaskControl):
+    title: str = "Mask"
+    description: str = "Defines areas to be modified in the generated image."
+    content_type: ContentType = ContentType.IMAGE
+    supported_contents: List[ControlContent] = [MaskControlContent()]
+
+
+class CannyEdgeDetectionControl(CannyControl):
+    title: str = "Canny Edge Detection"
+    description: str = "Emphasizes edges for sketch-to-image generation."
+    content_type: ContentType = ContentType.IMAGE
+    supported_contents: List[ControlContent] = [ImageControlContent()]
+
+
+class LineArtControl(LineArtControl):
+    title: str = "Line Guide"
+    description: str = (
+        "Extracts and guides the generation based on the contours and fine details of the provided image, without considering colors or other elements. Useful for sketch-to-image generation and line-based guidance."
+    )
+    content_type: ContentType = ContentType.IMAGE
+    supported_contents: List[ControlContent] = [ImageControlContent()]
+
+
+class PoseControl(PoseControl):
     title: str = "Pose Guide"
     description: str = (
-        "Specify a pose to be incorporated into the generated image. Useful for complex poses."
+        "Incorporates a specified pose into the generated image. Useful for complex poses."
     )
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
-class DepthImageControl(DepthControl):
+class DepthControl(DepthControl):
     title: str = "Depth Guide"
     description: str = (
-        "Incorporate depth into the generated image. Useful for 3D effects."
+        "Incorporates depth information into the generated image. Useful for 3D effects."
     )
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
-class StyleTransferImageControl(StyleTransferControl):
+class StyleTransferControl(StyleTransferControl):
     title: str = "Style Transfer"
     description: str = (
-        "Use an image to influence the style, composition, and colors of the generated result."
+        "Influences the style, composition, and colors of the generated result."
     )
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
-class FaceReplacementImageControl(FaceReplacementControl):
-    title: str = "Face Transfer"
+class FaceReplacementControl(FaceReplacementControl):
+    title: str = "Face Replacement"
     description: str = (
-        "Incorporate a face into the generated image. Useful for portraits or character design."
+        "Incorporates a provided face into the generated image. Useful for portraits or character design."
     )
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
-class TransparentBackgroundImageControl(TransparentBackgroundControl):
+class TransparentBackgroundControl(TransparentBackgroundControl):
     title: str = "Transparent Background"
-    description: str = "When generating it keeps the background transparent"
+    description: str = "Generates an image with a transparent background."
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
-class RegionalPromptImageControl(RegionalPromptControl):
+class RegionalPromptControl(RegionalPromptControl):
     title: str = "Regional Prompt"
-    description: str = "Mark the areas for applying regional prompts."
+    description: str = "Marks the areas for applying regional prompts."
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [MaskControlContent()]
 
 
-class UpscaleImageControl(UpscaleControl):
+class UpscaleControl(UpscaleControl):
     title: str = "Upscale"
-    description: str = "Increase the resolution of the generated image."
+    description: str = "Increases the resolution of the provided image."
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
-class FaceDetailerImageControl(FaceDetailerControl):
+class FaceDetailerControl(FaceDetailerControl):
     title: str = "Face Detailer"
-    description: str = "Enhance the details of the face in the generated image."
+    description: str = "Enhances the details of the face in the generated image."
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
-class SeamlessTailingImageControl(SeamlessTailingControl):
-    title: str = "Seamless Tailing"
-    description: str = "Generate a seamless tailing from the input image."
+class SeamlessTilingControl(SeamlessTilingControl):
+    title: str = "Seamless Tiling"
+    description: str = "Generates a seamless tiling pattern from the provided image."
+    content_type: ContentType = ContentType.IMAGE
+    supported_contents: List[ControlContent] = [ImageControlContent()]
+
+
+class RelightingImageControl(RelightingControl):
+    title: str = "Relighting"
+    description: str = (
+        "Changes the illumination or weather conditions of the generated scene."
+    )
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [ImageControlContent()]

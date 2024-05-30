@@ -3,7 +3,7 @@ from rossa import (
     BaseWorkflow,
     ControlValue,
     ControlsField,
-    InputImageControl,
+    ReferenceImageControl,
     MaskImageControl,
     next_control,
 )
@@ -13,7 +13,7 @@ class Workflow(BaseWorkflow):
     def run(
         self,
         controls: List[ControlValue] = ControlsField(
-            options=[InputImageControl(), MaskImageControl()]
+            options=[ReferenceImageControl(), MaskImageControl()]
         ),
     ):
         assert len(controls) == 2, "Please provide an input image and a mask."
@@ -22,7 +22,7 @@ class Workflow(BaseWorkflow):
             isinstance(control, ControlValue) for control in controls
         ), "Controls must be of type ControlValue. Probably validate_arguments is not working."
 
-        image = next_control(controls, InputImageControl())
+        image = next_control(controls, ReferenceImageControl())
 
         mask = next_control(controls, MaskImageControl())
 
