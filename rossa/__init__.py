@@ -65,8 +65,8 @@ from .controls import (
     UpscaleImageControl,
     FaceDetailerControl,
     FaceDetailerImageControl,
-    SeamlessTailingControl,
-    SeamlessTailingImageControl,
+    SeamlessTilingControl,
+    SeamlessTilingImageControl,
     RelightingControl,
     RelightingImageControl,
 )
@@ -183,8 +183,8 @@ __all__ = [
     "UpscaleImageControl",
     "FaceDetailerControl",
     "FaceDetailerImageControl",
-    "SeamlessTailingControl",
-    "SeamlessTailingImageControl",
+    "SeamlessTilingControl",
+    "SeamlessTilingImageControl",
     "RelightingControl",
     "RelightingImageControl",
     # Performances

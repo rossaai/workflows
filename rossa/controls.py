@@ -200,21 +200,21 @@ class ReferenceImageControl(ReferenceControl):
     supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
-class MaskControl(MaskControl):
+class MaskImageControl(MaskControl):
     title: str = "Mask"
     description: str = "Defines areas to be modified in the generated image."
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [MaskControlContent()]
 
 
-class CannyEdgeDetectionControl(CannyControl):
+class CannyEdgeDetectionImageControl(CannyControl):
     title: str = "Canny Edge Detection"
     description: str = "Emphasizes edges for sketch-to-image generation."
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
-class LineArtControl(LineArtControl):
+class LineArtImageControl(LineArtControl):
     title: str = "Line Guide"
     description: str = (
         "Extracts and guides the generation based on the contours and fine details of the provided image, without considering colors or other elements. Useful for sketch-to-image generation and line-based guidance."
@@ -223,7 +223,7 @@ class LineArtControl(LineArtControl):
     supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
-class PoseControl(PoseControl):
+class PoseImageControl(PoseControl):
     title: str = "Pose Guide"
     description: str = (
         "Incorporates a specified pose into the generated image. Useful for complex poses."
@@ -232,7 +232,7 @@ class PoseControl(PoseControl):
     supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
-class DepthControl(DepthControl):
+class DepthImageControl(DepthControl):
     title: str = "Depth Guide"
     description: str = (
         "Incorporates depth information into the generated image. Useful for 3D effects."
@@ -241,7 +241,7 @@ class DepthControl(DepthControl):
     supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
-class StyleTransferControl(StyleTransferControl):
+class StyleTransferImageControl(StyleTransferControl):
     title: str = "Style Transfer"
     description: str = (
         "Influences the style, composition, and colors of the generated result."
@@ -250,7 +250,7 @@ class StyleTransferControl(StyleTransferControl):
     supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
-class FaceReplacementControl(FaceReplacementControl):
+class FaceReplacementImageControl(FaceReplacementControl):
     title: str = "Face Replacement"
     description: str = (
         "Incorporates a provided face into the generated image. Useful for portraits or character design."
@@ -259,35 +259,35 @@ class FaceReplacementControl(FaceReplacementControl):
     supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
-class TransparentBackgroundControl(TransparentBackgroundControl):
+class TransparentBackgroundImageControl(TransparentBackgroundControl):
     title: str = "Transparent Background"
     description: str = "Generates an image with a transparent background."
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
-class RegionalPromptControl(RegionalPromptControl):
+class RegionalPromptImageControl(RegionalPromptControl):
     title: str = "Regional Prompt"
     description: str = "Marks the areas for applying regional prompts."
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [MaskControlContent()]
 
 
-class UpscaleControl(UpscaleControl):
+class UpscaleImageControl(UpscaleControl):
     title: str = "Upscale"
     description: str = "Increases the resolution of the provided image."
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
-class FaceDetailerControl(FaceDetailerControl):
+class FaceDetailerImageControl(FaceDetailerControl):
     title: str = "Face Detailer"
     description: str = "Enhances the details of the face in the generated image."
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
-class SeamlessTilingControl(SeamlessTilingControl):
+class SeamlessTilingImageControl(SeamlessTilingControl):
     title: str = "Seamless Tiling"
     description: str = "Generates a seamless tiling pattern from the provided image."
     content_type: ContentType = ContentType.IMAGE
