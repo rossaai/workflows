@@ -207,7 +207,7 @@ class MaskImageControl(MaskControl):
     supported_contents: List[ControlContent] = [MaskControlContent()]
 
 
-class CannyEdgeDetectionImageControl(CannyControl):
+class CannyImageControl(CannyControl):
     title: str = "Canny Edge Detection"
     description: str = "Emphasizes edges for sketch-to-image generation."
     content_type: ContentType = ContentType.IMAGE
