@@ -242,3 +242,6 @@ class Content(BaseModel):
 
     def has_mask(self) -> bool:
         return ContentType.MASK in self.contents
+
+    def has_image(self) -> bool:
+        return ContentType.IMAGE in self.contents
