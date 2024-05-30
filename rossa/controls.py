@@ -177,7 +177,7 @@ class FaceDetailerControl(BaseControl):
 
 
 class SeamlessTilingControl(BaseControl):
-    value: ControlType = ControlType.CONTROL_SEAMLESS_PATTERN
+    value: ControlType = ControlType.CONTROL_SEAMLESS_TILING
     title: str = "Seamless Tiling"
     description: str = "Generate a seamless tailing from the input image."
 
