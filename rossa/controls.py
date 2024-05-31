@@ -1,4 +1,4 @@
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, root_validator, Field as PydanticField
 from typing import Any, Dict, List, Optional, Union
 
 from .constants import REGIONAL_PROMPT_ADVANCED_FIELD_ALIAS
@@ -8,7 +8,12 @@ from .fields import BaseFieldInfo, TextAreaField
 
 
 class ControlValue(Content):
-    influence: float
+    influence: float = PydanticField(
+        title="Influence",
+        description="The influence of the control value on the generation process.",
+        ge=0.0,
+        le=2.0,
+    )
     advanced_fields: Optional[Dict[str, Any]] = None
 
     def get_advanced_field(self, field_name: str, default: Any = None):
