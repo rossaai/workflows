@@ -13,7 +13,8 @@ def url_to_pil_image(url: str):
         image_data = base64.b64decode(url[base64_str_index:])
         image = Image.open(BytesIO(image_data))
     else:
-        response = requests.get(url)
+        # add 10 seconds timeout
+        response = requests.get(url, timeout=10)
         image = Image.open(BytesIO(response.content))
 
     return image
