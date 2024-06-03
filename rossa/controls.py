@@ -1,3 +1,4 @@
+import os
 from pydantic import BaseModel, root_validator, Field as PydanticField
 from typing import Any, Dict, List, Optional, Union
 
@@ -20,6 +21,17 @@ class ControlValue(Content):
             return default
 
         return self.advanced_fields.get(field_name, default)
+
+    def is_prompt(self, content_type: ContentType = ContentType.MASK) -> bool:
+        """Identify if the mask is a prompt."""
+
+        content = self.get_content(content_type)
+
+        return (
+            isinstance(content, str)
+            and not content.startswith(("http://", "https://", "data:"))
+            and not os.path.isfile(content)
+        )
 
 
 class ControlContent(BaseModel):

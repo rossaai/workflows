@@ -127,8 +127,11 @@ class Option(BaseModel):
     default: Optional[bool] = False
 
 
+ContentsDict = Dict[ContentType, Union[str, bytes, Image.Image, np.ndarray]]
+
+
 class Content(BaseModel):
-    contents: Dict[ContentType, Union[str, bytes, Image.Image, np.ndarray]] = Field(
+    contents: ContentsDict = Field(
         description="Dictionary mapping ContentType to content as str (URL, data URL-base64, or path), bytes, PIL Image, or NumPy array"
     )
     control_type: ControlType
@@ -136,10 +139,16 @@ class Content(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-    def to_response(self, content_type: ContentType) -> FastAPIResponse:
+    def get_content(self, content_type: ContentType) -> ContentsDict:
         content = self.contents.get(content_type)
+
         if content is None:
             raise ValueError(f"No content found for content type: {content_type}")
+
+        return content
+
+    def to_response(self, content_type: ContentType) -> FastAPIResponse:
+        content = self.get_content(content_type)
 
         if isinstance(content, (Image.Image, np.ndarray)):
             buffered = io.BytesIO()
@@ -177,9 +186,7 @@ class Content(BaseModel):
             )
 
     def save(self, content_type: ContentType, file_path: str):
-        content = self.contents.get(content_type)
-        if content is None:
-            raise ValueError(f"No content found for content type: {content_type}")
+        content = self.get_content(content_type)
 
         if isinstance(content, (Image.Image, np.ndarray)):
             img = (
@@ -213,9 +220,8 @@ class Content(BaseModel):
     def to_pil_image(
         self, content_type: ContentType = ContentType.IMAGE
     ) -> Image.Image:
-        content = self.contents.get(content_type)
-        if content is None:
-            raise Exception(f"{content_type} content is not provided.")
+        content = self.get_content(content_type)
+
         if isinstance(content, Image.Image):
             return content
         elif isinstance(content, np.ndarray):
@@ -227,9 +233,8 @@ class Content(BaseModel):
             return img
 
     def to_cv2_image(self, content_type: ContentType = ContentType.IMAGE) -> np.ndarray:
-        content = self.contents.get(content_type)
-        if content is None:
-            raise Exception(f"{content_type} content is not provided.")
+        content = self.get_content(content_type)
+
         if isinstance(content, np.ndarray):
             return content
         elif isinstance(content, Image.Image):
