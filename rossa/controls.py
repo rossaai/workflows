@@ -11,8 +11,6 @@ class ControlValue(Content):
     influence: float = PydanticField(
         title="Influence",
         description="The influence of the control value on the generation process.",
-        ge=0.0,
-        le=2.0,
     )
     advanced_fields: Optional[Dict[str, Any]] = None
 
