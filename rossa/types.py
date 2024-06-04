@@ -40,11 +40,13 @@ class ControlType(str, Enum):
 
 class ContentType(str, Enum):
     IMAGE = "image"
-    MASK = "mask"
     VIDEO = "video"
     AUDIO = "audio"
     TEXT = "text"
     THREE_D = "threed"
+    MASK = "mask"
+    MASK_FROM_PROMPT = "mask_from_prompt"
+    MASK_FROM_COLOR = "mask_from_color"
 
 
 class ProgressNotificationType(str, Enum):
@@ -147,6 +149,9 @@ class Content(BaseModel):
 
         return content
 
+    def has_content(self, content_type: ContentType) -> bool:
+        return content_type in self.contents
+
     def to_response(self, content_type: ContentType) -> FastAPIResponse:
         content = self.get_content(content_type)
 
@@ -245,8 +250,5 @@ class Content(BaseModel):
                 raise Exception("Invalid image URL. Please provide a valid image URL.")
             return img
 
-    def has_mask(self) -> bool:
-        return ContentType.MASK in self.contents
-
     def has_image(self) -> bool:
-        return ContentType.IMAGE in self.contents
+        return self.has_content(ContentType.IMAGE)

@@ -43,10 +43,6 @@ class ImageControlContent(ControlContent):
     content_type: ContentType = ContentType.IMAGE
 
 
-class MaskControlContent(ControlContent):
-    content_type: ContentType = ContentType.MASK
-
-
 class VideoControlContent(ControlContent):
     content_type: ContentType = ContentType.VIDEO
 
@@ -61,6 +57,18 @@ class TextControlContent(ControlContent):
 
 class ThreeDControlContent(ControlContent):
     content_type: ContentType = ContentType.THREE_D
+
+
+class MaskControlContent(ControlContent):
+    content_type: ContentType = ContentType.MASK
+
+
+class MaskFromPromptControlContent(ControlContent):
+    content_type: ContentType = ContentType.MASK_FROM_PROMPT
+
+
+class MaskFromColorControlContent(ControlContent):
+    content_type: ContentType = ContentType.MASK_FROM_COLOR
 
 
 class BaseControl(Option):

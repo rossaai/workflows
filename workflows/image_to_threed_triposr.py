@@ -7,6 +7,7 @@ from rossa import (
     ReferenceImageControl,
     ThreeDResponse,
     next_control,
+    ContentType,
 )
 
 # Adapted from: https://github.com/camenduru/TripoSR-replicate/blob/main/cog.yaml
@@ -133,7 +134,7 @@ class Workflow(BaseWorkflow):
     ):
         image = next_control(controls, ReferenceImageControl())
 
-        image = image.to_pil_image()
+        image = image.to_pil_image(ContentType.IMAGE)
 
         image = preprocess_image(
             image, remove_background, foreground_ratio, self.rembg_session
