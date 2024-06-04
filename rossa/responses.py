@@ -18,7 +18,7 @@ class BaseResponse(Content):
 
 def ImageResponse(
     content: Union[str, bytes, Image.Image, np.ndarray],
-    control_type: ControlType = ControlType.INPUT,
+    control_type: ControlType = ControlType.CONTROL_REFERENCE,
 ):
     return BaseResponse(
         contents={ContentType.IMAGE: content},
@@ -29,7 +29,7 @@ def ImageResponse(
 
 def VideoResponse(
     content: Union[str, bytes],
-    control_type: ControlType = ControlType.INPUT,
+    control_type: ControlType = ControlType.CONTROL_REFERENCE,
 ):
     return BaseResponse(
         contents={ContentType.VIDEO: content},
@@ -40,7 +40,7 @@ def VideoResponse(
 
 def AudioResponse(
     content: Union[str, bytes],
-    control_type: ControlType = ControlType.INPUT,
+    control_type: ControlType = ControlType.CONTROL_REFERENCE,
 ):
     return BaseResponse(
         contents={ContentType.AUDIO: content},
@@ -51,7 +51,7 @@ def AudioResponse(
 
 def ThreeDResponse(
     content: Union[str, bytes],
-    control_type: ControlType = ControlType.INPUT,
+    control_type: ControlType = ControlType.CONTROL_REFERENCE,
 ):
     return BaseResponse(
         contents={ContentType.THREE_D: content},
@@ -62,7 +62,7 @@ def ThreeDResponse(
 
 def TextResponse(
     content: str,
-    control_type: ControlType = ControlType.INPUT,
+    control_type: ControlType = ControlType.CONTROL_REFERENCE,
 ):
     return BaseResponse(
         contents={ContentType.TEXT: content},

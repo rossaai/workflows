@@ -21,21 +21,21 @@ import numpy as np
 
 
 class ControlType(str, Enum):
-    INPUT = "input"
-    MASK = "mask"
-    CONTROL_UPSCALE = "control-upscale"
-    CONTROL_FACE_DETAILER = "control-face-detailer"
-    CONTROL_SEAMLESS_TILING = "control-seamless-tiling"
-    CONTROL_LINE_ART = "control-lineart"
-    CONTROL_CANNY = "control-canny"
-    CONTROL_POSE = "control-pose"
-    CONTROL_DEPTH = "control-depth"
-    CONTROL_REGIONAL_PROMPT = "control-regional-prompt"
-    CONTROL_STYLE_TRANSFER = "control-style-transfer"
-    CONTROL_COMPOSITION_TRANSFER = "control-composition-transfer"
-    CONTROL_FACE_REPLACEMENT = "control-face-replacement"
-    CONTROL_RELIGHTING = "control-relight"
-    CONTROL_TRANSPARENT_BACKGROUND = "control-transparent-background"
+    CONTROL_REFERENCE = "control_reference"
+    CONTROL_INPAINTING = "control_mask"
+    CONTROL_UPSCALE = "control_upscale"
+    CONTROL_FACE_DETAILER = "control_face_detailer"
+    CONTROL_SEAMLESS_TILING = "control_seamless_tiling"
+    CONTROL_LINE_ART = "control_lineart"
+    CONTROL_CANNY = "control_canny"
+    CONTROL_POSE = "control_pose"
+    CONTROL_DEPTH = "control_depth"
+    CONTROL_REGIONAL_PROMPT = "control_regional_prompt"
+    CONTROL_STYLE_TRANSFER = "control_style_transfer"
+    CONTROL_COMPOSITION_TRANSFER = "control_composition_transfer"
+    CONTROL_FACE_REPLACEMENT = "control_face_replacement"
+    CONTROL_RELIGHTING = "control_relight"
+    CONTROL_TRANSPARENT_BACKGROUND = "control_transparent_background"
 
 
 class ContentType(str, Enum):

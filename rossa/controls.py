@@ -118,15 +118,15 @@ class BaseControl(Option):
 
 
 class ReferenceControl(BaseControl):
-    value: ControlType = ControlType.INPUT
+    value: ControlType = ControlType.CONTROL_REFERENCE
     title: str = "Source"
     description: str = "Input for generation."
 
 
-class MaskControl(BaseControl):
-    value: ControlType = ControlType.MASK
-    title: str = "Mask"
-    description: str = "Mask for generation."
+class InpaintingControl(BaseControl):
+    value: ControlType = ControlType.CONTROL_INPAINTING
+    title: str = "Inpainting"
+    description: str = "Inpainting for generation."
 
 
 class CannyControl(BaseControl):
@@ -223,11 +223,14 @@ class ReferenceImageControl(ReferenceControl):
     supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
-class MaskImageControl(MaskControl):
-    title: str = "Mask"
+class InpaintingImageControl(InpaintingControl):
+    title: str = "Inpainting"
     description: str = "Defines areas to be modified in the generated image."
     content_type: ContentType = ContentType.IMAGE
-    supported_contents: List[ControlContent] = [MaskControlContent()]
+    supported_contents: List[ControlContent] = [
+        ImageControlContent(is_required=False),
+        MaskControlContent(),
+    ]
 
 
 class CannyImageControl(CannyControl):
