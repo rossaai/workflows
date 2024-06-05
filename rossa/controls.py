@@ -213,6 +213,12 @@ class RelightingControl(BaseControl):
     )
 
 
+class TryOnControl(BaseControl):
+    value: ControlType = ControlType.CONTROL_TRY_ON
+    title: str = "Try On"
+    description: str = "Try On the clothes on the person in the image."
+
+
 # IMAGE CONTROLSc
 class ReferenceImageControl(ReferenceControl):
     title: str = "Reference"
@@ -325,5 +331,12 @@ class RelightingImageControl(RelightingControl):
     description: str = (
         "Changes the illumination or weather conditions of the generated scene."
     )
+    content_type: ContentType = ContentType.IMAGE
+    supported_contents: List[ControlContent] = [ImageControlContent()]
+
+
+class TryOnImageControl(TryOnControl):
+    title: str = "Try On"
+    description: str = "Try On the clothes on the person in the image."
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [ImageControlContent()]

@@ -35,6 +35,7 @@ class ControlType(str, Enum):
     CONTROL_COMPOSITION_TRANSFER = "control_composition_transfer"
     CONTROL_FACE_REPLACEMENT = "control_face_replacement"
     CONTROL_RELIGHTING = "control_relight"
+    CONTROL_TRY_ON = "control_try_on"
     CONTROL_TRANSPARENT_BACKGROUND = "control_transparent_background"
 
 

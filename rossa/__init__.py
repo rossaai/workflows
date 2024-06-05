@@ -71,6 +71,8 @@ from .controls import (
     SeamlessTilingImageControl,
     RelightingControl,
     RelightingImageControl,
+    TryOnControl,
+    TryOnImageControl,
 )
 
 from .performances import (
@@ -191,6 +193,8 @@ __all__ = [
     "SeamlessTilingImageControl",
     "RelightingControl",
     "RelightingImageControl",
+    "TryOnControl",
+    "TryOnImageControl",
     # Performances
     "PerformanceType",
     "BasePerformance",
