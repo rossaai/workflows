@@ -111,8 +111,8 @@ class BaseControl(Option):
                         f"Supported content {content} must be a ControlContent."
                     )
 
-            if len(values["supported_contents"]) == 0:
-                raise Exception("Supported contents cannot be empty.")
+            # if len(values["supported_contents"]) == 0:
+            #     raise Exception("Supported contents cannot be empty.")
 
         return values
 
@@ -216,7 +216,19 @@ class RelightingControl(BaseControl):
 class TryOnControl(BaseControl):
     value: ControlType = ControlType.CONTROL_TRY_ON
     title: str = "Try On"
-    description: str = "Try On the clothes on the person in the image."
+    description: str = "Try On the clothes on the person in the content."
+
+
+class OverlayControl(BaseControl):
+    value: ControlType = ControlType.CONTROL_OVERLAY
+    title: str = "Overlay"
+    description: str = "Overlay the image on the generated content."
+
+
+class EffectControl(BaseControl):
+    value: ControlType = ControlType.CONTROL_EFFECT
+    title: str = "Effect"
+    description: str = "Apply an effect to the generated content."
 
 
 # IMAGE CONTROLSc
@@ -338,5 +350,19 @@ class RelightingImageControl(RelightingControl):
 class TryOnImageControl(TryOnControl):
     title: str = "Try On"
     description: str = "Try On the clothes on the person in the image."
+    content_type: ContentType = ContentType.IMAGE
+    supported_contents: List[ControlContent] = [ImageControlContent()]
+
+
+class OverlayImageControl(OverlayControl):
+    title: str = "Image Overlay"
+    description: str = "Overlay the image on the generated image."
+    content_type: ContentType = ContentType.IMAGE
+    supported_contents: List[ControlContent] = [ImageControlContent()]
+
+
+class EffectImageControl(EffectControl):
+    title: str = "Image Effect"
+    description: str = "Apply an effect to the generated image."
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [ImageControlContent()]

@@ -36,6 +36,8 @@ class ControlType(str, Enum):
     CONTROL_FACE_REPLACEMENT = "control_face_replacement"
     CONTROL_RELIGHTING = "control_relight"
     CONTROL_TRY_ON = "control_try_on"
+    CONTROL_OVERLAY = "control_overlay"
+    CONTROL_EFFECT = "control_effect"
     CONTROL_TRANSPARENT_BACKGROUND = "control_transparent_background"
 
 

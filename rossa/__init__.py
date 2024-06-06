@@ -73,6 +73,10 @@ from .controls import (
     RelightingImageControl,
     TryOnControl,
     TryOnImageControl,
+    OverlayControl,
+    OverlayImageControl,
+    EffectControl,
+    EffectImageControl,
 )
 
 from .performances import (
@@ -195,6 +199,10 @@ __all__ = [
     "RelightingImageControl",
     "TryOnControl",
     "TryOnImageControl",
+    "OverlayControl",
+    "OverlayImageControl",
+    "EffectControl",
+    "EffectImageControl",
     # Performances
     "PerformanceType",
     "BasePerformance",
