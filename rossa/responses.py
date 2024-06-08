@@ -1,7 +1,8 @@
 from typing import Optional, Union
 from pydantic import BaseModel, Field
 from fastapi import Response as FastAPIResponse
-from .types import Content, ContentType, ControlType, ProgressNotificationType
+from .types import ContentType, ProgressNotificationType
+from .contents import Content
 from PIL import Image
 import numpy as np
 
@@ -18,56 +19,46 @@ class BaseResponse(Content):
 
 def ImageResponse(
     content: Union[str, bytes, Image.Image, np.ndarray],
-    control_type: ControlType = ControlType.CONTROL_REFERENCE,
 ):
     return BaseResponse(
         contents={ContentType.IMAGE: content},
         content_type=ContentType.IMAGE,
-        control_type=control_type,
     )
 
 
 def VideoResponse(
     content: Union[str, bytes],
-    control_type: ControlType = ControlType.CONTROL_REFERENCE,
 ):
     return BaseResponse(
         contents={ContentType.VIDEO: content},
         content_type=ContentType.VIDEO,
-        control_type=control_type,
     )
 
 
 def AudioResponse(
     content: Union[str, bytes],
-    control_type: ControlType = ControlType.CONTROL_REFERENCE,
 ):
     return BaseResponse(
         contents={ContentType.AUDIO: content},
         content_type=ContentType.AUDIO,
-        control_type=control_type,
     )
 
 
 def ThreeDResponse(
     content: Union[str, bytes],
-    control_type: ControlType = ControlType.CONTROL_REFERENCE,
 ):
     return BaseResponse(
         contents={ContentType.THREE_D: content},
         content_type=ContentType.THREE_D,
-        control_type=control_type,
     )
 
 
 def TextResponse(
     content: str,
-    control_type: ControlType = ControlType.CONTROL_REFERENCE,
 ):
     return BaseResponse(
         contents={ContentType.TEXT: content},
         content_type=ContentType.TEXT,
-        control_type=control_type,
     )
 
 

@@ -21,6 +21,8 @@ from .fields import (
     PercentageSliderField,
     CheckboxField,
     SelectField,
+    ColorField,
+    DynamicFormField,
 )
 
 from .reserved_fields import (
@@ -40,8 +42,6 @@ from .controls import (
     TextControlContent,
     ThreeDControlContent,
     MaskControlContent,
-    MaskFromColorControlContent,
-    MaskFromPromptControlContent,
     BaseControl,
     ReferenceControl,
     ReferenceImageControl,
@@ -77,14 +77,12 @@ from .controls import (
     OverlayImageControl,
     EffectControl,
     EffectImageControl,
+    RemoveObjectControl,
+    RemoveObjectImageControl,
+    ExpandControl,
+    ExpandImageControl,
 )
 
-from .performances import (
-    BasePerformance,
-    InstantPerformance,
-    BalancedPerformance,
-    QualityPerformance,
-)
 
 from .responses import (
     Response,
@@ -106,11 +104,11 @@ from .types import (
     ApplicableElement,
     ControlType,
     FieldType,
-    PerformanceType,
     GeneratorType,
     Option,
-    Content,
 )
+
+from .contents import Content, ContentElement
 
 from .utils import next_control
 
@@ -139,6 +137,8 @@ __all__ = [
     "PromptField",
     "NegativePromptField",
     "ControlsField",
+    "DynamicFormField",
+    "ColorField",
     # Fields Conditionals
     "ShowFieldIfValue",
     # Workflow
@@ -166,8 +166,6 @@ __all__ = [
     "TextControlContent",
     "ThreeDControlContent",
     "MaskControlContent",
-    "MaskFromColorControlContent",
-    "MaskFromPromptControlContent",
     "BaseControl",
     "ReferenceControl",
     "InpaintingControl",
@@ -203,19 +201,19 @@ __all__ = [
     "OverlayImageControl",
     "EffectControl",
     "EffectImageControl",
-    # Performances
-    "PerformanceType",
-    "BasePerformance",
-    "InstantPerformance",
-    "BalancedPerformance",
-    "QualityPerformance",
+    "RemoveObjectControl",
+    "RemoveObjectImageControl",
+    "ExpandControl",
+    "ExpandImageControl",
     # Types
     "ContentType",
     "ApplicableElement",
     "Option",
     "GeneratorType",
     "ControlType",
+    # Contents
     "Content",
+    "ContentElement",
     # Utils
     "next_control",
     # Exceptions

@@ -1,42 +1,34 @@
 import os
 from pydantic import BaseModel, root_validator, Field as PydanticField
-from typing import Any, Dict, List, Optional, Union
+from typing import List, Optional, Union
 
 from .constants import REGIONAL_PROMPT_ADVANCED_FIELD_ALIAS
 
-from .types import Content, Option, ContentType, ControlType
+from .types import (
+    BaseModelWithAdvancedFields,
+    ContentType,
+    ControlType,
+    Option,
+)
+from .contents import Content
 from .fields import BaseFieldInfo, TextAreaField
 
 
-class ControlValue(Content):
+class ControlValue(Content, BaseModelWithAdvancedFields):
+    control_type: ControlType
     influence: float = PydanticField(
         title="Influence",
         description="The influence of the control value on the generation process.",
     )
-    advanced_fields: Optional[Dict[str, Any]] = None
-
-    def get_advanced_field(self, field_name: str, default: Any = None):
-        """Gets an advanced field by name."""
-        if self.advanced_fields is None:
-            return default
-
-        return self.advanced_fields.get(field_name, default)
-
-    def is_prompt(self, content_type: ContentType = ContentType.MASK) -> bool:
-        """Identify if the mask is a prompt."""
-
-        content = self.get_content(content_type)
-
-        return (
-            isinstance(content, str)
-            and not content.startswith(("http://", "https://", "data:"))
-            and not os.path.isfile(content)
-        )
 
 
 class ControlContent(BaseModel):
     content_type: ContentType
     is_required: bool = True
+    advanced_fields: Optional[List[BaseFieldInfo]] = None
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class ImageControlContent(ControlContent):
@@ -63,14 +55,6 @@ class MaskControlContent(ControlContent):
     content_type: ContentType = ContentType.MASK
 
 
-class MaskFromPromptControlContent(ControlContent):
-    content_type: ContentType = ContentType.MASK_FROM_PROMPT
-
-
-class MaskFromColorControlContent(ControlContent):
-    content_type: ContentType = ContentType.MASK_FROM_COLOR
-
-
 class BaseControl(Option):
     """
     Represents a control option with specific requirements and applicability.
@@ -86,20 +70,6 @@ class BaseControl(Option):
     value: Union[ControlType, str]
     content_type: ContentType
     supported_contents: List[ControlContent]
-    advanced_fields: Optional[List[BaseFieldInfo]] = None
-
-    class Config:
-        arbitrary_types_allowed = True
-
-    @root_validator(pre=True)
-    def validate_every_advanced_field_has_alias(cls, values):
-        """Validates that every advanced field has an alias."""
-        if "advanced_fields" in values and values["advanced_fields"] is not None:
-            for field in values["advanced_fields"]:
-                if not hasattr(field, "alias") or field.alias is None:
-                    raise Exception(f"Advanced field {field} must have an alias.")
-
-        return values
 
     @root_validator(pre=True)
     def validate_supported_contents(cls, values):
@@ -229,6 +199,20 @@ class EffectControl(BaseControl):
     value: ControlType = ControlType.CONTROL_EFFECT
     title: str = "Effect"
     description: str = "Apply an effect to the generated content."
+
+
+class ExpandControl(BaseControl):
+    value: ControlType = ControlType.CONTROL_EXPAND
+    title: str = "Expand"
+    description: str = (
+        "Expand the generated image in the specified direction (left, right, top, bottom, or all sides) by a given percentage."
+    )
+
+
+class RemoveObjectControl(BaseControl):
+    value: ControlType = ControlType.CONTROL_REMOVE_OBJECT
+    title: str = "Remove Object"
+    description: str = "Remove selected objects or areas from the generated image."
 
 
 # IMAGE CONTROLSc
@@ -364,5 +348,26 @@ class OverlayImageControl(OverlayControl):
 class EffectImageControl(EffectControl):
     title: str = "Image Effect"
     description: str = "Apply an effect to the generated image."
+    content_type: ContentType = ContentType.IMAGE
+    supported_contents: List[ControlContent] = [ImageControlContent()]
+
+
+class RemoveObjectImageControl(RemoveObjectControl):
+    title: str = "Remove Object"
+    description: str = (
+        "Removes selected objects or areas from the generated image, allowing for targeted object removal and image cleanup."
+    )
+    content_type: ContentType = ContentType.IMAGE
+    supported_contents: List[ControlContent] = [
+        ImageControlContent(),
+        MaskControlContent(),
+    ]
+
+
+class ExpandImageControl(ExpandControl):
+    title: str = "Expand Image"
+    description: str = (
+        "Expands the generated image in the specified direction (left, right, top, bottom, or all sides) by a given percentage, allowing for seamless image extension and canvas resizing."
+    )
     content_type: ContentType = ContentType.IMAGE
     supported_contents: List[ControlContent] = [ImageControlContent()]

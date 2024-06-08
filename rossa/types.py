@@ -1,23 +1,10 @@
-import base64
 from enum import Enum
-import io
-import mimetypes
-import os
-from typing import Dict, Optional, Union
-from pydantic import BaseModel, Field
-import requests
-from fastapi import Response as FastAPIResponse
+from typing import Any, Dict, List, Optional
+from pydantic import BaseModel, root_validator
 import random
+from pydantic.fields import FieldInfo
 
-from .image_conversion_utils import url_to_cv2_image, url_to_pil_image
-from .constants import (
-    DEFAULT_IMAGE_FORMAT,
-    DEFAULT_IMAGE_MIME_TYPE,
-    MAX_SAFE_DECIMAL,
-    MAX_SAFE_INTEGER,
-)
-from PIL import Image
-import numpy as np
+from .constants import MAX_SAFE_DECIMAL, MAX_SAFE_INTEGER
 
 
 class ControlType(str, Enum):
@@ -39,17 +26,17 @@ class ControlType(str, Enum):
     CONTROL_OVERLAY = "control_overlay"
     CONTROL_EFFECT = "control_effect"
     CONTROL_TRANSPARENT_BACKGROUND = "control_transparent_background"
+    CONTROL_EXPAND = "control_expand"
+    CONTROL_REMOVE_OBJECT = "control_remove_object"
 
 
 class ContentType(str, Enum):
+    MASK = "mask"
     IMAGE = "image"
     VIDEO = "video"
     AUDIO = "audio"
     TEXT = "text"
     THREE_D = "threed"
-    MASK = "mask"
-    MASK_FROM_PROMPT = "mask_from_prompt"
-    MASK_FROM_COLOR = "mask_from_color"
 
 
 class ProgressNotificationType(str, Enum):
@@ -85,12 +72,6 @@ class ApplicableElement(str, Enum):
     CHILD = "child"
 
 
-class PerformanceType(str, Enum):
-    INSTANT = "instant"
-    BALANCED = "balanced"
-    QUALITY = "quality"
-
-
 class FieldType(str, Enum):
     TEXT = "text"
     TEXTAREA = "textarea"
@@ -101,8 +82,12 @@ class FieldType(str, Enum):
     SELECT = "select"
     PROMPT = "prompt"
     NEGATIVE_PROMPT = "negative_prompt"
-    PERFORMANCE = "performance"
+    COLOR = "color"
+
+    # Similar
+    CONTENTS = "contents"
     CONTROLS = "controls"
+    DYNAMIC_FORM = "dynamic_form"
 
 
 class FormatType(str, Enum):
@@ -125,133 +110,35 @@ class GeneratorType(str, Enum):
             )  # Adjust range as needed
 
 
-class Option(BaseModel):
-    value: str
-    title: str
-    description: Optional[str] = None
-    default: Optional[bool] = False
-
-
-ContentsDict = Dict[ContentType, Union[str, bytes, Image.Image, np.ndarray]]
-
-
-class Content(BaseModel):
-    contents: ContentsDict = Field(
-        description="Dictionary mapping ContentType to content as str (URL, data URL-base64, or path), bytes, PIL Image, or NumPy array"
-    )
-    control_type: ControlType
+class BaseModelWithAdvancedFields(BaseModel):
+    advanced_fields: Optional[Dict[str, Any]] = None
 
     class Config:
         arbitrary_types_allowed = True
 
-    def get_content(self, content_type: ContentType) -> ContentsDict:
-        content = self.contents.get(content_type)
+    def get_advanced_field(self, field_name: str, default: Any = None):
+        """Gets an advanced field by name."""
+        if self.advanced_fields is None:
+            return default
 
-        if content is None:
-            raise ValueError(f"No content found for content type: {content_type}")
+        return self.advanced_fields.get(field_name, default)
 
-        return content
 
-    def has_content(self, content_type: ContentType) -> bool:
-        return content_type in self.contents
+class Option(BaseModel):
+    value: str
+    title: str
+    description: Optional[str] = None
+    advanced_fields: Optional[List[FieldInfo]] = None
 
-    def to_response(self, content_type: ContentType) -> FastAPIResponse:
-        content = self.get_content(content_type)
+    class Config:
+        arbitrary_types_allowed = True
 
-        if isinstance(content, (Image.Image, np.ndarray)):
-            buffered = io.BytesIO()
-            if isinstance(content, Image.Image):
-                content.save(buffered, format=DEFAULT_IMAGE_FORMAT)
-            else:
-                Image.fromarray(content).save(buffered, format=DEFAULT_IMAGE_FORMAT)
-            content_data = buffered.getvalue()
-            return FastAPIResponse(
-                content=content_data,
-                media_type=DEFAULT_IMAGE_MIME_TYPE,
-            )
-        elif isinstance(content, str):
-            if content.startswith(("http://", "https://")):
-                response = requests.get(content)
-                return FastAPIResponse(
-                    content=response.content,
-                    media_type=response.headers["Content-Type"],
-                )
-            elif content.startswith("data:"):
-                header, encoded = content.split(",", 1)
-                media_type = header.split(":")[1].split(";")[0]
-                content = base64.b64decode(encoded)
-                return FastAPIResponse(content=content, media_type=media_type)
-            elif os.path.isfile(content):
-                with open(content, "rb") as file:
-                    content_data = file.read()
-                    media_type, _ = mimetypes.guess_type(content)
-                    return FastAPIResponse(content=content_data, media_type=media_type)
-            elif content_type == ContentType.TEXT:
-                return FastAPIResponse(content=content, media_type="text/plain")
-        elif isinstance(content, bytes):
-            return FastAPIResponse(
-                content=content, media_type="application/octet-stream"
-            )
+    @root_validator(pre=True)
+    def validate_every_advanced_field_has_alias(cls, values):
+        """Validates that every advanced field has an alias."""
+        if "advanced_fields" in values and values["advanced_fields"] is not None:
+            for field in values["advanced_fields"]:
+                if not hasattr(field, "alias") or field.alias is None:
+                    raise Exception(f"Advanced field {field} must have an alias.")
 
-    def save(self, content_type: ContentType, file_path: str):
-        content = self.get_content(content_type)
-
-        if isinstance(content, (Image.Image, np.ndarray)):
-            img = (
-                content
-                if isinstance(content, Image.Image)
-                else Image.fromarray(content)
-            )
-            try:
-                img.save(file_path)
-            except Exception as e:
-                if "unknown file extension" in str(e):
-                    img.save(file_path, format=DEFAULT_IMAGE_FORMAT)
-        else:
-            with open(file_path, "wb") as file:
-                if isinstance(content, str):
-                    if content.startswith(("http://", "https://")):
-                        response = requests.get(content)
-                        file.write(response.content)
-                    elif content.startswith("data:"):
-                        header, encoded = content.split(",", 1)
-                        content_data = base64.b64decode(encoded)
-                        file.write(content_data)
-                    elif os.path.isfile(content):
-                        with open(content, "rb") as src_file:
-                            file.write(src_file.read())
-                    elif content_type == ContentType.TEXT:
-                        file.write(content)
-                elif isinstance(content, bytes):
-                    file.write(content)
-
-    def to_pil_image(
-        self, content_type: ContentType = ContentType.IMAGE
-    ) -> Image.Image:
-        content = self.get_content(content_type)
-
-        if isinstance(content, Image.Image):
-            return content
-        elif isinstance(content, np.ndarray):
-            return Image.fromarray(content)
-        else:
-            img = url_to_pil_image(content)
-            if img is None:
-                raise Exception("Invalid image URL. Please provide a valid image URL.")
-            return img
-
-    def to_cv2_image(self, content_type: ContentType = ContentType.IMAGE) -> np.ndarray:
-        content = self.get_content(content_type)
-
-        if isinstance(content, np.ndarray):
-            return content
-        elif isinstance(content, Image.Image):
-            return np.array(content)
-        else:
-            img = url_to_cv2_image(content)
-            if img is None:
-                raise Exception("Invalid image URL. Please provide a valid image URL.")
-            return img
-
-    def has_image(self) -> bool:
-        return self.has_content(ContentType.IMAGE)
+        return values

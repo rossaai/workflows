@@ -3,7 +3,12 @@ from pydantic.fields import FieldInfo
 from typing import Any, List, Literal, Optional, Union
 
 from .fields_conditionals import ShowFieldIfValue
-from .types import FormatType, GeneratorType, Option, FieldType
+from .types import (
+    FormatType,
+    GeneratorType,
+    Option,
+    FieldType,
+)
 
 
 BaseFieldInfo = FieldInfo
@@ -41,9 +46,6 @@ def BaseField(
 
     if type == FieldType.SELECT and not options:
         raise Exception("Select fields must have options.")
-
-    if type == FieldType.PERFORMANCE and not options:
-        raise Exception("Performance fields must have options.")
 
     if type == FieldType.CONTROLS and not options:
         raise Exception("Controls fields must have options.")
@@ -285,6 +287,29 @@ def CheckboxField(
     )
 
 
+def ColorField(
+    title: str,
+    description: str,
+    alias: Optional[str] = None,
+    placeholder: str = "",
+    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
+    default: Optional[str] = None,
+    default_generator_type: Optional[GeneratorType] = None,
+    **kwargs,
+):
+    return BaseField(
+        alias=alias,
+        type=FieldType.COLOR.value,
+        title=title,
+        description=description,
+        placeholder=placeholder,
+        show_if=show_if,
+        default=default,
+        default_generator_type=default_generator_type,
+        **kwargs,
+    )
+
+
 def SelectField(
     title: str,
     description: str,
@@ -294,6 +319,7 @@ def SelectField(
     default: Optional[str] = None,
     default_generator_type: Optional[GeneratorType] = None,
     show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
+    multiple=False,
     **kwargs,
 ):
     return BaseField(
@@ -306,5 +332,32 @@ def SelectField(
         default=default,
         default_generator_type=default_generator_type,
         show_if=show_if,
+        multiple=multiple,
+        **kwargs,
+    )
+
+
+def DynamicFormField(
+    title: str,
+    description: str,
+    options: List[Option],
+    alias: Optional[str] = None,
+    placeholder: str = "",
+    default: Optional[str] = None,
+    default_generator_type: Optional[GeneratorType] = None,
+    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
+    **kwargs,
+):
+    return BaseField(
+        alias=alias,
+        type=FieldType.DYNAMIC_FORM.value,
+        title=title,
+        description=description,
+        placeholder=placeholder,
+        options=options,
+        default=default,
+        default_generator_type=default_generator_type,
+        show_if=show_if,
+        multiple=True,
         **kwargs,
     )

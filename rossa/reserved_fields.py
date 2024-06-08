@@ -80,5 +80,6 @@ def ControlsField(
         options=options,
         default_generator_type=default_generator_type,
         show_if=show_if,
+        multiple=True,
         **kwargs,
     )
