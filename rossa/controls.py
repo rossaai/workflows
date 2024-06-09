@@ -15,7 +15,7 @@ from .fields import BaseFieldInfo, TextAreaField
 
 
 class ControlValue(Content, BaseModelWithAdvancedFields):
-    control_type: ControlType
+    control_type: Union[ControlType, str]
     influence: float = PydanticField(
         title="Influence",
         description="The influence of the control value on the generation process.",
