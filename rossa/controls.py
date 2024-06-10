@@ -86,6 +86,37 @@ class BaseControl(Option):
 
         return values
 
+    def supports_content(self, content: ContentType) -> bool:
+        """Checks if the control supports the given content."""
+        return any(
+            supported_content.content_type == content
+            for supported_content in self.supported_contents
+        )
+
+    def supports_image(self) -> bool:
+        """Checks if the control supports image content."""
+        return self.supports_content(ContentType.IMAGE)
+
+    def supports_video(self) -> bool:
+        """Checks if the control supports video content."""
+        return self.supports_content(ContentType.VIDEO)
+
+    def supports_audio(self) -> bool:
+        """Checks if the control supports audio content."""
+        return self.supports_content(ContentType.AUDIO)
+
+    def supports_text(self) -> bool:
+        """Checks if the control supports text content."""
+        return self.supports_content(ContentType.TEXT)
+
+    def supports_three_d(self) -> bool:
+        """Checks if the control supports 3D content."""
+        return self.supports_content(ContentType.THREE_D)
+
+    def supports_mask(self) -> bool:
+        """Checks if the control supports mask content."""
+        return self.supports_content(ContentType.MASK)
+
 
 class ReferenceControl(BaseControl):
     value: ControlType = ControlType.CONTROL_REFERENCE
