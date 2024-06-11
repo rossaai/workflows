@@ -142,3 +142,7 @@ class Option(BaseModel):
                     raise Exception(f"Advanced field {field} must have an alias.")
 
         return values
+
+
+class OptionValue(BaseModelWithAdvancedFields):
+    value: str
