@@ -45,7 +45,7 @@ class WorkflowBlueprint(ABC):
 
         cls.run = run_wrapper
 
-    def schema(self):
+    def schema(self) -> Dict[str, Any]:
         # validate title, version, description
         if not isinstance(self.title, str):
             raise ValueError("title must be a string")
@@ -66,51 +66,68 @@ class WorkflowBlueprint(ABC):
 
         parameters = inspect.signature(run_fn).parameters
 
-        for name, param in parameters.items():
-            default = param.default
+        def field_info_to_dict(field: FieldInfo) -> Optional[Dict[str, Any]]:
+            if not isinstance(field, FieldInfo):
+                return None
 
-            is_not_valid_field = default == inspect.Parameter.empty or not isinstance(
-                default, FieldInfo
-            )
-
-            if is_not_valid_field:
-                continue
+            OPTIONS_KEY = "options"
+            TYPE_KEY = "type"
 
             extra = (
-                default.extra
-                if hasattr(default, "extra")
+                field.extra
+                if hasattr(field, "extra")
                 else (
-                    default.json_schema_extra
-                    if hasattr(default, "json_schema_extra")
+                    field.json_schema_extra
+                    if hasattr(field, "json_schema_extra")
                     else {}
                 )
             )
-            is_not_valid_field = "type" not in default.extra and default.extra[
-                "type"
-            ] not in set(FieldType)
 
-            if is_not_valid_field:
-                continue
+            if TYPE_KEY not in extra or extra[TYPE_KEY] not in set(FieldType):
+                return None
 
             options = []
 
-            # validate if .options is a list and is in default.extra class
-            if "options" in default.extra and isinstance(
-                default.extra["options"], list
-            ):
-                for option in default.extra["options"]:
-                    if isinstance(option, Option):
-                        options.append(option.dict(by_alias=True))
+            def process_value(value: Any) -> Any:
+                if isinstance(value, FieldInfo):
+                    return field_info_to_dict(value)
+                elif isinstance(value, list):
+                    return [process_value(item) for item in value]
+                elif isinstance(value, dict):
+                    return {k: process_value(v) for k, v in value.items()}
+                return value
 
-            fields.append(
-                {
-                    "name": name,
-                    "title": default.title,
-                    "type": default.extra["type"],
-                    "description": default.description,
-                    "options": options,
-                }
-            )
+            if OPTIONS_KEY in extra and isinstance(extra[OPTIONS_KEY], list):
+                for option in extra[OPTIONS_KEY]:
+                    if not isinstance(option, Option):
+                        continue
+
+                    option_dict = option.dict()
+                    option_dict = {
+                        key: process_value(value) for key, value in option_dict.items()
+                    }
+                    options.append(option_dict)
+
+            return {
+                "name": name,
+                TYPE_KEY: extra[TYPE_KEY],
+                "title": field.title,
+                "description": field.description,
+                OPTIONS_KEY: options,
+            }
+
+        for name, param in parameters.items():
+            default = param.default
+
+            if default == inspect.Parameter.empty or not isinstance(default, FieldInfo):
+                continue
+
+            field = field_info_to_dict(default)
+
+            if field is None:
+                continue
+
+            fields.append(field)
 
         new_schema = {
             "title": self.title,
