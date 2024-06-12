@@ -14,3 +14,7 @@ PROMPT_FIELD_ALIAS = "prompt"
 NEGATIVE_PROMPT_FIELD_ALIAS = "negative_prompt"
 
 CONTROLS_FIELD_ALIAS = "controls"
+
+SAFE_DEFAULT_FIELD_KEY = "_default"
+
+REAL_DEFAULT_FIELD_KEY = "default"

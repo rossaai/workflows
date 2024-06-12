@@ -9,6 +9,7 @@ from .types import (
     Option,
     FieldType,
 )
+from .constants import SAFE_DEFAULT_FIELD_KEY
 
 
 BaseFieldInfo = FieldInfo
@@ -68,6 +69,11 @@ def BaseField(
 
         return default
 
+    if default is not None:
+        kwargs = kwargs or {}
+
+        kwargs[SAFE_DEFAULT_FIELD_KEY] = default
+
     return PydanticField(
         alias=alias,
         default_factory=(
@@ -80,6 +86,7 @@ def BaseField(
         description=description,
         placeholder=placeholder,
         options=options,
+        default_generator_type=default_generator_type,
         show_if=show_if,
         **kwargs,
     )
@@ -153,11 +160,13 @@ def NumberField(
         placeholder=placeholder,
         ge=min,
         le=max,
-        step=step,
         format_type=format_type,
         default=default,
         default_generator_type=default_generator_type,
         show_if=show_if,
+        min=min,
+        max=max,
+        step=step,
         **kwargs,
     )
 
@@ -167,10 +176,10 @@ def IntegerField(
     description: str,
     alias: Optional[str] = None,
     placeholder: str = "",
-    step: int = 1,
     default: Optional[int] = None,
     min: Optional[int] = None,
     max: Optional[int] = None,
+    step: int = 1,
     default_generator_type: Optional[GeneratorType] = None,
     show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
     **kwargs,
@@ -185,11 +194,13 @@ def IntegerField(
         placeholder=placeholder,
         ge=min,
         le=max,
-        step=step,
         format_type=FormatType.INTEGER,
         default_generator_type=default_generator_type,
         default=default,
         show_if=show_if,
+        min=min,
+        max=max,
+        step=step,
         **kwargs,
     )
 
@@ -199,8 +210,8 @@ def SliderField(
     description: str,
     min: float,
     max: float,
-    alias: Optional[str] = None,
     step: Optional[float] = None,
+    alias: Optional[str] = None,
     placeholder: str = "",
     format_type: FormatType = FormatType.DECIMAL,
     default: Optional[float] = None,
@@ -228,11 +239,13 @@ def SliderField(
         placeholder=placeholder,
         ge=min,
         le=max,
-        step=step,
         format_type=format_type,
         default=default,
         default_generator_type=default_generator_type,
         show_if=show_if,
+        min=min,
+        max=max,
+        step=step,
         **kwargs,
     )
 
@@ -243,8 +256,8 @@ def PercentageSliderField(
     alias: Optional[str] = None,
     placeholder: str = "",
     min: float = 0,
-    max: float = 100,
-    step: float = 1,
+    max: float = 1.0,
+    step: float = 0.01,
     default: Optional[float] = None,
     default_generator_type: Optional[GeneratorType] = None,
     show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
@@ -255,13 +268,13 @@ def PercentageSliderField(
         title=title,
         description=description,
         placeholder=placeholder,
-        min=min,
-        max=max,
-        step=step,
         format_type=FormatType.PERCENTAGE,
         default=default,
         default_generator_type=default_generator_type,
         show_if=show_if,
+        min=min,
+        max=max,
+        step=step,
         **kwargs,
     )
 

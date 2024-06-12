@@ -1,4 +1,6 @@
 from typing import Any, Dict, Generator, List, Optional, Union
+
+from .constants import SAFE_DEFAULT_FIELD_KEY, REAL_DEFAULT_FIELD_KEY
 from .responses import Notification, Response
 from .image import Image
 from .fields import FieldType, Option
@@ -66,9 +68,11 @@ class WorkflowBlueprint(ABC):
 
         parameters = inspect.signature(run_fn).parameters
 
-        def field_info_to_dict(field: FieldInfo) -> Optional[Dict[str, Any]]:
+        def field_info_to_dict(
+            field: FieldInfo, name: Optional[str] = None
+        ) -> Dict[str, Any]:
             if not isinstance(field, FieldInfo):
-                return None
+                raise ValueError("Field must be a FieldInfo")
 
             OPTIONS_KEY = "options"
             TYPE_KEY = "type"
@@ -84,7 +88,12 @@ class WorkflowBlueprint(ABC):
             )
 
             if TYPE_KEY not in extra or extra[TYPE_KEY] not in set(FieldType):
-                return None
+                raise ValueError("Field type must be in FieldType.")
+
+            name = name or field.alias
+
+            if not name or not isinstance(name, str):
+                raise ValueError("Field name must be a string")
 
             options = []
 
@@ -108,12 +117,22 @@ class WorkflowBlueprint(ABC):
                     }
                     options.append(option_dict)
 
+            if OPTIONS_KEY in extra:
+                del extra[OPTIONS_KEY]
+
+            if SAFE_DEFAULT_FIELD_KEY in extra:
+                extra[REAL_DEFAULT_FIELD_KEY] = extra[SAFE_DEFAULT_FIELD_KEY]
+                del extra[SAFE_DEFAULT_FIELD_KEY]
+
+            # detele all values with None in the extra dict
+            extra = {k: v for k, v in extra.items() if v is not None}
+
             return {
                 "name": name,
-                TYPE_KEY: extra[TYPE_KEY],
                 "title": field.title,
                 "description": field.description,
                 OPTIONS_KEY: options,
+                **extra,
             }
 
         for name, param in parameters.items():
@@ -122,7 +141,7 @@ class WorkflowBlueprint(ABC):
             if default == inspect.Parameter.empty or not isinstance(default, FieldInfo):
                 continue
 
-            field = field_info_to_dict(default)
+            field = field_info_to_dict(default, name)
 
             if field is None:
                 continue
@@ -133,8 +152,8 @@ class WorkflowBlueprint(ABC):
             "title": self.title,
             "version": self.version,
             "description": self.description,
-            "fields": fields,
             "examples": self.examples if isinstance(self.examples, list) else [],
+            "fields": fields,
         }
 
         return new_schema
