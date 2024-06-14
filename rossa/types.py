@@ -85,7 +85,6 @@ class FieldType(str, Enum):
     COLOR = "color"
 
     # Similar
-    CONTENTS = "contents"
     CONTROLS = "controls"
     DYNAMIC_FORM = "dynamic_form"
 

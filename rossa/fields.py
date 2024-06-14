@@ -1,6 +1,6 @@
 from pydantic import Field as PydanticField
 from pydantic.fields import FieldInfo
-from typing import Any, List, Literal, Optional, Union
+from typing import Any, List, Optional, Union
 
 from .fields_conditionals import ShowFieldIfValue
 from .types import (
@@ -14,23 +14,10 @@ from .constants import SAFE_DEFAULT_FIELD_KEY
 
 BaseFieldInfo = FieldInfo
 
-FieldTypeLiteral = Literal[
-    "text",
-    "textarea",
-    "number",
-    "slider",
-    "checkbox",
-    "select",
-    "prompt",
-    "negative_prompt",
-    "performance",
-    "controls",
-]
-
 
 def BaseField(
     title: str,
-    type: FieldTypeLiteral,
+    type: FieldType,
     description: str,
     alias: Optional[str] = None,
     placeholder: str = "",
@@ -104,7 +91,7 @@ def TextField(
 ):
     return BaseField(
         alias=alias,
-        type=FieldType.TEXT.value,
+        type=FieldType.TEXT,
         title=title,
         description=description,
         placeholder=placeholder,
@@ -127,7 +114,7 @@ def TextAreaField(
 ):
     return BaseField(
         alias=alias,
-        type=FieldType.TEXTAREA.value,
+        type=FieldType.TEXTAREA,
         title=title,
         description=description,
         placeholder=placeholder,
@@ -154,7 +141,7 @@ def NumberField(
 ):
     return BaseField(
         alias=alias,
-        type=FieldType.NUMBER.value,
+        type=FieldType.NUMBER,
         title=title,
         description=description,
         placeholder=placeholder,
@@ -188,7 +175,7 @@ def IntegerField(
 
     return BaseField(
         alias=alias,
-        type=FieldType.NUMBER.value,
+        type=FieldType.NUMBER,
         title=title,
         description=description,
         placeholder=placeholder,
@@ -233,7 +220,7 @@ def SliderField(
 
     return BaseField(
         alias=alias,
-        type=FieldType.SLIDER.value,
+        type=FieldType.SLIDER,
         title=title,
         description=description,
         placeholder=placeholder,
@@ -290,7 +277,7 @@ def CheckboxField(
 ):
     return BaseField(
         alias=alias,
-        type=FieldType.CHECKBOX.value,
+        type=FieldType.CHECKBOX,
         title=title,
         description=description,
         placeholder=placeholder,
@@ -312,7 +299,7 @@ def ColorField(
 ):
     return BaseField(
         alias=alias,
-        type=FieldType.COLOR.value,
+        type=FieldType.COLOR,
         title=title,
         description=description,
         placeholder=placeholder,
@@ -332,12 +319,11 @@ def SelectField(
     default: Optional[str] = None,
     default_generator_type: Optional[GeneratorType] = None,
     show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
-    multiple=False,
     **kwargs,
 ):
     return BaseField(
         alias=alias,
-        type=FieldType.SELECT.value,
+        type=FieldType.SELECT,
         title=title,
         description=description,
         placeholder=placeholder,
@@ -345,7 +331,6 @@ def SelectField(
         default=default,
         default_generator_type=default_generator_type,
         show_if=show_if,
-        multiple=multiple,
         **kwargs,
     )
 
@@ -363,7 +348,7 @@ def DynamicFormField(
 ):
     return BaseField(
         alias=alias,
-        type=FieldType.DYNAMIC_FORM.value,
+        type=FieldType.DYNAMIC_FORM,
         title=title,
         description=description,
         placeholder=placeholder,
@@ -371,6 +356,5 @@ def DynamicFormField(
         default=default,
         default_generator_type=default_generator_type,
         show_if=show_if,
-        multiple=True,
         **kwargs,
     )
