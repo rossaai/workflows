@@ -1,8 +1,8 @@
 from pydantic import Field as PydanticField
 from pydantic.fields import FieldInfo
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional
 
-from .fields_conditionals import ShowFieldIfValue
+from .fields_conditionals import FieldsConditionals
 from .types import (
     FormatType,
     GeneratorType,
@@ -24,7 +24,8 @@ def BaseField(
     options: Optional[List[Option]] = None,
     default: Optional[Any] = None,
     default_generator_type: Optional[GeneratorType] = None,
-    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
+    show_if: Optional[FieldsConditionals] = None,
+    disable_if: Optional[FieldsConditionals] = None,
     **kwargs,
 ):
     if options:
@@ -32,11 +33,19 @@ def BaseField(
             if not isinstance(option, Option):
                 raise Exception("Field options must be a list of Option.")
 
-    if type == FieldType.SELECT and not options:
-        raise Exception("Select fields must have options.")
-
-    if type == FieldType.CONTROLS and not options:
-        raise Exception("Controls fields must have options.")
+    if (
+        type
+        in [
+            FieldType.SELECT,
+            FieldType.RADIO,
+            FieldType.DYNAMIC_FORM,
+            FieldType.CONTROLS,
+        ]
+        and not options
+    ):
+        raise Exception(
+            "Select, Radio, Dynamic Form and Controls fields must have options."
+        )
 
     if default is not None and default_generator_type is not None:
         raise Exception("Field cannot have both default and default_generator_type.")
@@ -75,6 +84,7 @@ def BaseField(
         options=options,
         default_generator_type=default_generator_type,
         show_if=show_if,
+        disable_if=disable_if,
         **kwargs,
     )
 
@@ -86,7 +96,8 @@ def TextField(
     alias: Optional[str] = None,
     default: Optional[str] = None,
     default_generator_type: Optional[GeneratorType] = None,
-    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
+    show_if: Optional[FieldsConditionals] = None,
+    disable_if: Optional[FieldsConditionals] = None,
     **kwargs,
 ):
     return BaseField(
@@ -98,6 +109,7 @@ def TextField(
         default=default,
         default_generator_type=default_generator_type,
         show_if=show_if,
+        disable_if=disable_if,
         **kwargs,
     )
 
@@ -107,7 +119,8 @@ def TextAreaField(
     description: str,
     alias: Optional[str] = None,
     placeholder: str = "",
-    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
+    show_if: Optional[FieldsConditionals] = None,
+    disable_if: Optional[FieldsConditionals] = None,
     default: Optional[str] = None,
     default_generator_type: Optional[GeneratorType] = None,
     **kwargs,
@@ -119,6 +132,7 @@ def TextAreaField(
         description=description,
         placeholder=placeholder,
         show_if=show_if,
+        disable_if=disable_if,
         default=default,
         default_generator_type=default_generator_type,
         **kwargs,
@@ -136,7 +150,8 @@ def NumberField(
     format_type: FormatType = FormatType.DECIMAL,
     default: Optional[float] = None,
     default_generator_type: Optional[GeneratorType] = None,
-    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
+    show_if: Optional[FieldsConditionals] = None,
+    disable_if: Optional[FieldsConditionals] = None,
     **kwargs,
 ):
     return BaseField(
@@ -151,6 +166,7 @@ def NumberField(
         default=default,
         default_generator_type=default_generator_type,
         show_if=show_if,
+        disable_if=disable_if,
         min=min,
         max=max,
         step=step,
@@ -168,7 +184,8 @@ def IntegerField(
     max: Optional[int] = None,
     step: int = 1,
     default_generator_type: Optional[GeneratorType] = None,
-    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
+    show_if: Optional[FieldsConditionals] = None,
+    disable_if: Optional[FieldsConditionals] = None,
     **kwargs,
 ):
     step = int(step)
@@ -185,6 +202,7 @@ def IntegerField(
         default_generator_type=default_generator_type,
         default=default,
         show_if=show_if,
+        disable_if=disable_if,
         min=min,
         max=max,
         step=step,
@@ -203,7 +221,8 @@ def SliderField(
     format_type: FormatType = FormatType.DECIMAL,
     default: Optional[float] = None,
     default_generator_type: Optional[GeneratorType] = None,
-    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
+    show_if: Optional[FieldsConditionals] = None,
+    disable_if: Optional[FieldsConditionals] = None,
     **kwargs,
 ):
     if min > max:
@@ -230,6 +249,7 @@ def SliderField(
         default=default,
         default_generator_type=default_generator_type,
         show_if=show_if,
+        disable_if=disable_if,
         min=min,
         max=max,
         step=step,
@@ -247,7 +267,8 @@ def PercentageSliderField(
     step: float = 0.01,
     default: Optional[float] = None,
     default_generator_type: Optional[GeneratorType] = None,
-    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
+    show_if: Optional[FieldsConditionals] = None,
+    disable_if: Optional[FieldsConditionals] = None,
     **kwargs,
 ):
     return SliderField(
@@ -259,6 +280,7 @@ def PercentageSliderField(
         default=default,
         default_generator_type=default_generator_type,
         show_if=show_if,
+        disable_if=disable_if,
         min=min,
         max=max,
         step=step,
@@ -272,7 +294,8 @@ def CheckboxField(
     alias: Optional[str] = None,
     placeholder: str = "",
     default: bool = False,
-    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
+    show_if: Optional[FieldsConditionals] = None,
+    disable_if: Optional[FieldsConditionals] = None,
     **kwargs,
 ):
     return BaseField(
@@ -283,6 +306,7 @@ def CheckboxField(
         placeholder=placeholder,
         default=default,
         show_if=show_if,
+        disable_if=disable_if,
         **kwargs,
     )
 
@@ -292,7 +316,8 @@ def ColorField(
     description: str,
     alias: Optional[str] = None,
     placeholder: str = "",
-    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
+    show_if: Optional[FieldsConditionals] = None,
+    disable_if: Optional[FieldsConditionals] = None,
     default: Optional[str] = None,
     default_generator_type: Optional[GeneratorType] = None,
     **kwargs,
@@ -304,6 +329,7 @@ def ColorField(
         description=description,
         placeholder=placeholder,
         show_if=show_if,
+        disable_if=disable_if,
         default=default,
         default_generator_type=default_generator_type,
         **kwargs,
@@ -318,7 +344,8 @@ def SelectField(
     placeholder: str = "",
     default: Optional[str] = None,
     default_generator_type: Optional[GeneratorType] = None,
-    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
+    show_if: Optional[FieldsConditionals] = None,
+    disable_if: Optional[FieldsConditionals] = None,
     **kwargs,
 ):
     return BaseField(
@@ -331,6 +358,34 @@ def SelectField(
         default=default,
         default_generator_type=default_generator_type,
         show_if=show_if,
+        disable_if=disable_if,
+        **kwargs,
+    )
+
+
+def RadioField(
+    title: str,
+    description: str,
+    options: List[Option],
+    alias: Optional[str] = None,
+    placeholder: str = "",
+    default: Optional[str] = None,
+    default_generator_type: Optional[GeneratorType] = None,
+    show_if: Optional[FieldsConditionals] = None,
+    disable_if: Optional[FieldsConditionals] = None,
+    **kwargs,
+):
+    return BaseField(
+        alias=alias,
+        type=FieldType.RADIO,
+        title=title,
+        description=description,
+        placeholder=placeholder,
+        options=options,
+        default=default,
+        default_generator_type=default_generator_type,
+        show_if=show_if,
+        disable_if=disable_if,
         **kwargs,
     )
 
@@ -343,7 +398,8 @@ def DynamicFormField(
     placeholder: str = "",
     default: Optional[str] = None,
     default_generator_type: Optional[GeneratorType] = None,
-    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
+    show_if: Optional[FieldsConditionals] = None,
+    disable_if: Optional[FieldsConditionals] = None,
     **kwargs,
 ):
     return BaseField(
@@ -356,5 +412,6 @@ def DynamicFormField(
         default=default,
         default_generator_type=default_generator_type,
         show_if=show_if,
+        disable_if=disable_if,
         **kwargs,
     )

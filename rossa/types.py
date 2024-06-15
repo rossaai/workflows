@@ -80,6 +80,7 @@ class FieldType(str, Enum):
     INTEGER = "integer"
     CHECKBOX = "checkbox"
     SELECT = "select"
+    RADIO = "radio"
     PROMPT = "prompt"
     NEGATIVE_PROMPT = "negative_prompt"
     COLOR = "color"

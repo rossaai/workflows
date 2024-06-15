@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import List, Optional
 
 from .constants import (
     CONTROLS_FIELD_ALIAS,
@@ -8,7 +8,7 @@ from .constants import (
 from .controls import BaseControl, ControlValue
 from .fields import BaseField
 from .types import FieldType, GeneratorType
-from .fields_conditionals import ShowFieldIfValue
+from .fields_conditionals import FieldsConditionals
 
 
 def PromptField(
@@ -18,7 +18,9 @@ def PromptField(
     default: str = "",
     alias: Optional[str] = PROMPT_FIELD_ALIAS,
     default_generator_type: Optional[GeneratorType] = None,
-    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
+    multiple: bool = False,
+    show_if: Optional[FieldsConditionals] = None,
+    disable_if: Optional[FieldsConditionals] = None,
     **kwargs,
 ):
     return BaseField(
@@ -29,7 +31,9 @@ def PromptField(
         placeholder=placeholder,
         default=default,
         default_generator_type=default_generator_type,
+        multiple=multiple,
         show_if=show_if,
+        disable_if=disable_if,
         **kwargs,
     )
 
@@ -41,7 +45,9 @@ def NegativePromptField(
     default: str = "",
     alias: Optional[str] = NEGATIVE_PROMPT_FIELD_ALIAS,
     default_generator_type: Optional[GeneratorType] = None,
-    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
+    multiple: bool = False,
+    show_if: Optional[FieldsConditionals] = None,
+    disable_if: Optional[FieldsConditionals] = None,
     **kwargs,
 ):
     return BaseField(
@@ -52,7 +58,9 @@ def NegativePromptField(
         placeholder=placeholder,
         default=default,
         default_generator_type=default_generator_type,
+        multiple=multiple,
         show_if=show_if,
+        disable_if=disable_if,
         **kwargs,
     )
 
@@ -64,7 +72,8 @@ def ControlsField(
     default: List[ControlValue] = [],
     alias: Optional[str] = CONTROLS_FIELD_ALIAS,
     default_generator_type: Optional[GeneratorType] = None,
-    show_if: Optional[Union[ShowFieldIfValue, List[ShowFieldIfValue]]] = None,
+    show_if: Optional[FieldsConditionals] = None,
+    disable_if: Optional[FieldsConditionals] = None,
     **kwargs,
 ):
     for option in options:
@@ -79,7 +88,8 @@ def ControlsField(
         description=description,
         options=options,
         default_generator_type=default_generator_type,
-        show_if=show_if,
         multiple=True,
+        show_if=show_if,
+        disable_if=disable_if,
         **kwargs,
     )
