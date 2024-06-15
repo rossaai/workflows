@@ -129,6 +129,7 @@ class Option(BaseModel):
     title: str
     description: Optional[str] = None
     advanced_fields: Optional[List[FieldInfo]] = None
+    group: Optional[str] = None
 
     class Config:
         arbitrary_types_allowed = True
