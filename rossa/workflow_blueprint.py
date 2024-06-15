@@ -5,7 +5,7 @@ from .responses import Notification, Response
 from .image import Image
 from .fields import FieldType, Option
 from abc import ABC, abstractmethod
-from pydantic import Extra, validate_arguments
+from pydantic import Extra, validate_arguments, BaseModel
 from pydantic.fields import FieldInfo
 import inspect
 from typing import Optional
@@ -104,6 +104,8 @@ class WorkflowBlueprint(ABC):
                     return [process_value(item) for item in value]
                 elif isinstance(value, dict):
                     return {k: process_value(v) for k, v in value.items()}
+                elif isinstance(value, BaseModel):
+                    return value.dict()
                 return value
 
             if OPTIONS_KEY in extra and isinstance(extra[OPTIONS_KEY], list):
@@ -125,7 +127,11 @@ class WorkflowBlueprint(ABC):
                 del extra[SAFE_DEFAULT_FIELD_KEY]
 
             # detele all values with None in the extra dict
-            extra = {k: v for k, v in extra.items() if v is not None}
+            extra = {
+                k: v.dict() if isinstance(v, BaseModel) else v
+                for k, v in extra.items()
+                if v is not None
+            }
 
             return {
                 "name": name,

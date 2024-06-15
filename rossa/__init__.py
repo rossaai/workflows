@@ -105,9 +105,10 @@ from .types import (
     ApplicableElement,
     ControlType,
     FieldType,
-    GeneratorType,
     Option,
     OptionValue,
+    FormatType,
+    GeneratorType,
 )
 
 from .contents import Content, ContentElement
@@ -213,6 +214,7 @@ __all__ = [
     "OptionValue",
     "GeneratorType",
     "ControlType",
+    "FormatType",
     # Contents
     "Content",
     "ContentElement",
