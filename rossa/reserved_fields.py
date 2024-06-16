@@ -16,7 +16,7 @@ from .fields_conditionals import FieldsConditionals
 def PromptField(
     title: str = "Prompt",
     description: str = "Prompt for the model.",
-    placeholder: str = "What do you want to create?",
+    placeholder: str = "Describe what would you want to create",
     default: str = "",
     alias: Optional[str] = PROMPT_FIELD_ALIAS,
     default_generator_type: Optional[GeneratorType] = None,
