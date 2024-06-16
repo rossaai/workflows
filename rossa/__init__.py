@@ -23,13 +23,13 @@ from .fields import (
     SelectField,
     RadioField,
     ColorField,
-    DynamicFormField,
 )
 
 from .reserved_fields import (
     PromptField,
     NegativePromptField,
     ControlsField,
+    InfluenceField,
 )
 
 from .fields_conditionals import IfValue, IfNotValue, IfMinLength, IfMaxLength
@@ -138,11 +138,12 @@ __all__ = [
     "CheckboxField",
     "SelectField",
     "RadioField",
+    "ColorField",
+    # Reserved Fields
     "PromptField",
     "NegativePromptField",
     "ControlsField",
-    "DynamicFormField",
-    "ColorField",
+    "InfluenceField",
     # Workflow
     "BaseWorkflow",
     # Image

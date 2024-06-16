@@ -388,30 +388,3 @@ def RadioField(
         disable_if=disable_if,
         **kwargs,
     )
-
-
-def DynamicFormField(
-    title: str,
-    description: str,
-    options: List[Option],
-    alias: Optional[str] = None,
-    placeholder: str = "",
-    default: Optional[str] = None,
-    default_generator_type: Optional[GeneratorType] = None,
-    show_if: Optional[FieldsConditionals] = None,
-    disable_if: Optional[FieldsConditionals] = None,
-    **kwargs,
-):
-    return BaseField(
-        alias=alias,
-        type=FieldType.DYNAMIC_FORM,
-        title=title,
-        description=description,
-        placeholder=placeholder,
-        options=options,
-        default=default,
-        default_generator_type=default_generator_type,
-        show_if=show_if,
-        disable_if=disable_if,
-        **kwargs,
-    )

@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 import requests
 from fastapi import Response as FastAPIResponse
 
-from .types import ContentType, BaseModelWithAdvancedFields
+from .types import ContentType, ValueElement
 from .image_conversion_utils import url_to_cv2_image, url_to_pil_image
 from .constants import (
     DEFAULT_IMAGE_FORMAT,
@@ -20,7 +20,7 @@ import numpy as np
 ContentElementContent = Union[str, bytes, Image.Image, np.ndarray]
 
 
-class ContentElement(BaseModelWithAdvancedFields):
+class ContentElement(ValueElement):
     value: ContentElementContent
 
 

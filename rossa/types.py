@@ -110,11 +110,20 @@ class GeneratorType(str, Enum):
             )  # Adjust range as needed
 
 
-class BaseModelWithAdvancedFields(BaseModel):
+class ValueElement(BaseModel):
+    value: str
+    fields: Optional[Dict[str, Any]] = None
     advanced_fields: Optional[Dict[str, Any]] = None
 
     class Config:
         arbitrary_types_allowed = True
+
+    def get_field(self, field_name: str, default: Any = None):
+        """Gets a field by name."""
+        if self.fields is None:
+            return default
+
+        return self.fields.get(field_name, default)
 
     def get_advanced_field(self, field_name: str, default: Any = None):
         """Gets an advanced field by name."""
@@ -124,10 +133,15 @@ class BaseModelWithAdvancedFields(BaseModel):
         return self.advanced_fields.get(field_name, default)
 
 
+class OptionValue(ValueElement):
+    pass
+
+
 class Option(BaseModel):
     value: str
     title: str
     description: Optional[str] = None
+    fields: Optional[List[FieldInfo]] = None
     advanced_fields: Optional[List[FieldInfo]] = None
     group: Optional[str] = None
 
@@ -143,7 +157,3 @@ class Option(BaseModel):
                     raise Exception(f"Advanced field {field} must have an alias.")
 
         return values
-
-
-class OptionValue(BaseModelWithAdvancedFields):
-    value: str

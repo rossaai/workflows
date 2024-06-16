@@ -1,13 +1,15 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from .constants import (
     CONTROLS_FIELD_ALIAS,
+    INFLUENCE_FIELD_ALIAS,
+    INFLUENCE_FIELD_DEFAULT,
     NEGATIVE_PROMPT_FIELD_ALIAS,
     PROMPT_FIELD_ALIAS,
 )
 from .controls import BaseControl, ControlValue
-from .fields import BaseField
-from .types import FieldType, GeneratorType
+from .fields import BaseField, SliderField
+from .types import FieldType, FormatType, GeneratorType, Option
 from .fields_conditionals import FieldsConditionals
 
 
@@ -68,7 +70,7 @@ def NegativePromptField(
 def ControlsField(
     title: str = "Controls",
     description: str = "List of controls.",
-    options: List[BaseControl] = [],
+    options: List[Union[BaseControl, Option]] = [],
     default: List[ControlValue] = [],
     alias: Optional[str] = CONTROLS_FIELD_ALIAS,
     default_generator_type: Optional[GeneratorType] = None,
@@ -77,8 +79,8 @@ def ControlsField(
     **kwargs,
 ):
     for option in options:
-        if not isinstance(option, BaseControl):
-            raise Exception("Control options must be a list of BaseControl.")
+        if not isinstance(option, (BaseControl, Option)):
+            raise Exception("Control options must be a list of BaseControl or Option.")
 
     return BaseField(
         type=FieldType.CONTROLS.value,
@@ -92,4 +94,17 @@ def ControlsField(
         show_if=show_if,
         disable_if=disable_if,
         **kwargs,
+    )
+
+
+def InfluenceField(**kwargs):
+    return SliderField(
+        alias=INFLUENCE_FIELD_ALIAS,
+        title="Influence",
+        description="The percentage of influence the control has on the generation.",
+        min=0.0,
+        max=2.0,
+        default=INFLUENCE_FIELD_DEFAULT,
+        format_type=FormatType.PERCENTAGE,
+        kwargs=kwargs,
     )
