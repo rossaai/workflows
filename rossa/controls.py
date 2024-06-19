@@ -57,10 +57,11 @@ class MaskControlContent(ControlContent):
 
 class BaseControl(Option):
     supported_contents: List[ControlContent]
+    estimated_outputs: Optional[List[ControlContent]] = None
 
     @root_validator(pre=True)
-    def validate_supported_contents(cls, values):
-        """Validates that the supported contents are valid."""
+    def validate_contents(cls, values):
+        """Validates that the supported and estimated contents are valid."""
         if "supported_contents" in values and values["supported_contents"] is not None:
             for content in values["supported_contents"]:
                 if not isinstance(content, ControlContent):
@@ -68,8 +69,12 @@ class BaseControl(Option):
                         f"Supported content {content} must be a ControlContent."
                     )
 
-            # if len(values["supported_contents"]) == 0:
-            #     raise Exception("Supported contents cannot be empty.")
+        if "estimated_outputs" in values and values["estimated_outputs"] is not None:
+            for content in values["estimated_outputs"]:
+                if not isinstance(content, ControlContent):
+                    raise Exception(
+                        f"Estimated output {content} must be a ControlContent."
+                    )
 
         return values
 
