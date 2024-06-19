@@ -97,14 +97,23 @@ def ControlsField(
     )
 
 
-def InfluenceField(**kwargs):
+def InfluenceField(
+    alias=INFLUENCE_FIELD_ALIAS,
+    title="Influence",
+    description="El porcentaje de influencia que el control tiene sobre la generación.",
+    min=0.0,
+    max=2.0,
+    default=INFLUENCE_FIELD_DEFAULT,
+    format_type=FormatType.PERCENTAGE,
+    **kwargs,
+):
     return SliderField(
-        alias=INFLUENCE_FIELD_ALIAS,
-        title="Influence",
-        description="The percentage of influence the control has on the generation.",
-        min=0.0,
-        max=2.0,
-        default=INFLUENCE_FIELD_DEFAULT,
-        format_type=FormatType.PERCENTAGE,
-        kwargs=kwargs,
+        alias=alias,
+        title=title,
+        description=description,
+        min=min,
+        max=max,
+        default=default,
+        format_type=format_type,
+        **kwargs,
     )
