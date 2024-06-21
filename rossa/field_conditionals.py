@@ -26,6 +26,6 @@ class IfMaxLength(BaseModel):
     max_length: int
 
 
-FieldsConditional = Union[IfValue, IfNotValue, IfMinLength, IfMaxLength]
+FieldConditional = Union[IfValue, IfNotValue, IfMinLength, IfMaxLength]
 
-FieldsConditionals = Union[List[FieldsConditional], FieldsConditional]
+FieldConditionals = Union[List[FieldConditional], FieldConditional]

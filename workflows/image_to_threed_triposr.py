@@ -8,6 +8,9 @@ from rossa import (
     ThreeDResponse,
     next_control,
     ContentType,
+    ControlOption,
+    ControlContent,
+    ImageControlContent,
 )
 
 # Adapted from: https://github.com/camenduru/TripoSR-replicate/blob/main/cog.yaml
@@ -80,6 +83,14 @@ with image.imports():
             if image.mode == "RGBA":
                 image = fill_background(image)
         return image
+
+
+class ReferenceImageControl(ControlOption):
+    title: str = "Reference"
+    description: str = (
+        "Guides the image generation process. Lower values blend the colors more, while higher values reduce the influence of the reference image."
+    )
+    supported_contents: List[ControlContent] = [ImageControlContent()]
 
 
 class Workflow(BaseWorkflow):

@@ -2,12 +2,15 @@ import base64
 import io
 import mimetypes
 import os
-from typing import Dict, Union
-from pydantic import BaseModel, Field
+from typing import Dict, Union, Optional
 import requests
 from fastapi import Response as FastAPIResponse
 
-from .types import ContentType, ValueElement
+from .field_values import FieldValue
+from .reserved_field_values import ReservedFieldValue
+
+from pydantic import BaseModel
+from .types import ContentType
 from .image_conversion_utils import url_to_cv2_image, url_to_pil_image
 from .constants import (
     DEFAULT_IMAGE_FORMAT,
@@ -17,45 +20,21 @@ from PIL import Image
 import numpy as np
 
 
-ContentElementContent = Union[str, bytes, Image.Image, np.ndarray]
-
-
-class ContentElement(ValueElement):
-    value: ContentElementContent
-
-
-ContentsDictValue = Union[ContentElementContent, ContentElement]
-
-ContentsDict = Dict[ContentType, ContentsDictValue]
-
-
 class Content(BaseModel):
-    contents: ContentsDict = Field(
-        description="Dictionary mapping ContentType to content as str (URL, data URL-base64, or path), bytes, PIL Image, or NumPy array"
-    )
+    type: ContentType
+    content: Union[str, bytes, Image.Image, np.ndarray]
+    settings: Dict[str, Union[FieldValue, ReservedFieldValue]] = {}
 
     class Config:
         arbitrary_types_allowed = True
 
-    def get_content(self, content_type: ContentType) -> ContentsDictValue:
-        content = self.contents.get(content_type)
+    def get_setting(
+        self, key: str, default: Optional[Union[FieldValue, ReservedFieldValue]] = None
+    ) -> Union[FieldValue, ReservedFieldValue]:
+        return self.settings.get(key, default)
 
-        if content is None:
-            raise ValueError(f"No content found for content type: {content_type}")
-
-        return content
-
-    def get_cleaned_content(self, content_type: ContentType) -> ContentElementContent:
-        content = self.get_content(content_type)
-        if isinstance(content, ContentElement):
-            return content.value
-        return content
-
-    def has_content(self, content_type: ContentType) -> bool:
-        return content_type in self.contents
-
-    def to_response(self, content_type: ContentType) -> FastAPIResponse:
-        content = self.get_cleaned_content(content_type)
+    def to_response(self):
+        content = self.content
 
         if isinstance(content, (Image.Image, np.ndarray)):
             buffered = io.BytesIO()
@@ -85,15 +64,15 @@ class Content(BaseModel):
                     content_data = file.read()
                     media_type, _ = mimetypes.guess_type(content)
                     return FastAPIResponse(content=content_data, media_type=media_type)
-            elif content_type == ContentType.TEXT:
+            else:
                 return FastAPIResponse(content=content, media_type="text/plain")
         elif isinstance(content, bytes):
             return FastAPIResponse(
                 content=content, media_type="application/octet-stream"
             )
 
-    def save(self, content_type: ContentType, file_path: str):
-        content = self.get_cleaned_content(content_type)
+    def save(self, file_path: str):
+        content = self.content
 
         if isinstance(content, (Image.Image, np.ndarray)):
             img = (
@@ -119,15 +98,13 @@ class Content(BaseModel):
                     elif os.path.isfile(content):
                         with open(content, "rb") as src_file:
                             file.write(src_file.read())
-                    elif content_type == ContentType.TEXT:
-                        file.write(content)
+                    else:
+                        file.write(content.encode("utf-8"))
                 elif isinstance(content, bytes):
                     file.write(content)
 
-    def to_pil_image(
-        self, content_type: ContentType = ContentType.IMAGE
-    ) -> Image.Image:
-        content = self.get_cleaned_content(content_type)
+    def to_pil_image(self) -> Image.Image:
+        content = self.content
 
         if isinstance(content, Image.Image):
             return content
@@ -139,8 +116,8 @@ class Content(BaseModel):
                 raise Exception("Invalid image URL. Please provide a valid image URL.")
             return img
 
-    def to_cv2_image(self, content_type: ContentType = ContentType.IMAGE) -> np.ndarray:
-        content = self.get_cleaned_content(content_type)
+    def to_cv2_image(self) -> np.ndarray:
+        content = self.content
 
         if isinstance(content, np.ndarray):
             return content
@@ -153,7 +130,7 @@ class Content(BaseModel):
             return img
 
     def has_image(self) -> bool:
-        return self.has_content(ContentType.IMAGE)
+        return any(content.type == ContentType.IMAGE for content in self.contents)
 
     def has_mask(self) -> bool:
-        return self.has_content(ContentType.MASK)
+        return any(content.type == ContentType.MASK for content in self.contents)

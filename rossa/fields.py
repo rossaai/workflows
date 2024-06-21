@@ -1,18 +1,41 @@
-from pydantic import Field as PydanticField
+from pydantic import BaseModel, Field as PydanticField, root_validator
 from pydantic.fields import FieldInfo
 from typing import Any, List, Optional
 
-from .fields_conditionals import FieldsConditionals
+from .field_values import SelectFieldValue
+
+from .field_conditionals import FieldConditionals
 from .types import (
     FormatType,
     GeneratorType,
-    Option,
     FieldType,
 )
 from .constants import SAFE_DEFAULT_FIELD_KEY
 
 
 BaseFieldInfo = FieldInfo
+
+
+class Option(BaseModel):
+    value: str
+    title: str
+    group: Optional[str] = None
+    description: Optional[str] = None
+    fields: Optional[List[FieldInfo]] = None
+    advanced_fields: Optional[List[FieldInfo]] = None
+
+    class Config:
+        arbitrary_types_allowed = True
+
+    @root_validator(pre=True)
+    def validate_every_advanced_field_has_alias(cls, values):
+        """Validates that every advanced field has an alias."""
+        if "advanced_fields" in values and values["advanced_fields"] is not None:
+            for field in values["advanced_fields"]:
+                if not hasattr(field, "alias") or field.alias is None:
+                    raise Exception(f"Advanced field {field} must have an alias.")
+
+        return values
 
 
 def BaseField(
@@ -24,8 +47,8 @@ def BaseField(
     options: Optional[List[Option]] = None,
     default: Optional[Any] = None,
     default_generator_type: Optional[GeneratorType] = None,
-    show_if: Optional[FieldsConditionals] = None,
-    disable_if: Optional[FieldsConditionals] = None,
+    show_if: Optional[FieldConditionals] = None,
+    disable_if: Optional[FieldConditionals] = None,
     **kwargs,
 ):
     if options:
@@ -96,8 +119,8 @@ def TextField(
     alias: Optional[str] = None,
     default: Optional[str] = None,
     default_generator_type: Optional[GeneratorType] = None,
-    show_if: Optional[FieldsConditionals] = None,
-    disable_if: Optional[FieldsConditionals] = None,
+    show_if: Optional[FieldConditionals] = None,
+    disable_if: Optional[FieldConditionals] = None,
     **kwargs,
 ):
     return BaseField(
@@ -119,8 +142,8 @@ def TextAreaField(
     description: str,
     alias: Optional[str] = None,
     placeholder: str = "",
-    show_if: Optional[FieldsConditionals] = None,
-    disable_if: Optional[FieldsConditionals] = None,
+    show_if: Optional[FieldConditionals] = None,
+    disable_if: Optional[FieldConditionals] = None,
     default: Optional[str] = None,
     default_generator_type: Optional[GeneratorType] = None,
     **kwargs,
@@ -150,8 +173,8 @@ def NumberField(
     format_type: FormatType = FormatType.DECIMAL,
     default: Optional[float] = None,
     default_generator_type: Optional[GeneratorType] = None,
-    show_if: Optional[FieldsConditionals] = None,
-    disable_if: Optional[FieldsConditionals] = None,
+    show_if: Optional[FieldConditionals] = None,
+    disable_if: Optional[FieldConditionals] = None,
     **kwargs,
 ):
     return BaseField(
@@ -184,8 +207,8 @@ def IntegerField(
     max: Optional[int] = None,
     step: int = 1,
     default_generator_type: Optional[GeneratorType] = None,
-    show_if: Optional[FieldsConditionals] = None,
-    disable_if: Optional[FieldsConditionals] = None,
+    show_if: Optional[FieldConditionals] = None,
+    disable_if: Optional[FieldConditionals] = None,
     **kwargs,
 ):
     step = int(step)
@@ -221,8 +244,8 @@ def SliderField(
     format_type: FormatType = FormatType.DECIMAL,
     default: Optional[float] = None,
     default_generator_type: Optional[GeneratorType] = None,
-    show_if: Optional[FieldsConditionals] = None,
-    disable_if: Optional[FieldsConditionals] = None,
+    show_if: Optional[FieldConditionals] = None,
+    disable_if: Optional[FieldConditionals] = None,
     **kwargs,
 ):
     if min > max:
@@ -267,8 +290,8 @@ def PercentageSliderField(
     step: float = 0.01,
     default: Optional[float] = None,
     default_generator_type: Optional[GeneratorType] = None,
-    show_if: Optional[FieldsConditionals] = None,
-    disable_if: Optional[FieldsConditionals] = None,
+    show_if: Optional[FieldConditionals] = None,
+    disable_if: Optional[FieldConditionals] = None,
     **kwargs,
 ):
     return SliderField(
@@ -294,8 +317,8 @@ def CheckboxField(
     alias: Optional[str] = None,
     placeholder: str = "",
     default: bool = False,
-    show_if: Optional[FieldsConditionals] = None,
-    disable_if: Optional[FieldsConditionals] = None,
+    show_if: Optional[FieldConditionals] = None,
+    disable_if: Optional[FieldConditionals] = None,
     **kwargs,
 ):
     return BaseField(
@@ -316,8 +339,8 @@ def ColorField(
     description: str,
     alias: Optional[str] = None,
     placeholder: str = "",
-    show_if: Optional[FieldsConditionals] = None,
-    disable_if: Optional[FieldsConditionals] = None,
+    show_if: Optional[FieldConditionals] = None,
+    disable_if: Optional[FieldConditionals] = None,
     default: Optional[str] = None,
     default_generator_type: Optional[GeneratorType] = None,
     **kwargs,
@@ -342,10 +365,11 @@ def SelectField(
     options: List[Option],
     alias: Optional[str] = None,
     placeholder: str = "",
-    default: Optional[str] = None,
+    default: Optional[SelectFieldValue] = None,
     default_generator_type: Optional[GeneratorType] = None,
-    show_if: Optional[FieldsConditionals] = None,
-    disable_if: Optional[FieldsConditionals] = None,
+    show_if: Optional[FieldConditionals] = None,
+    disable_if: Optional[FieldConditionals] = None,
+    multiple: bool = False,
     **kwargs,
 ):
     return BaseField(
@@ -359,6 +383,7 @@ def SelectField(
         default_generator_type=default_generator_type,
         show_if=show_if,
         disable_if=disable_if,
+        multiple=multiple,
         **kwargs,
     )
 
@@ -371,8 +396,8 @@ def RadioField(
     placeholder: str = "",
     default: Optional[str] = None,
     default_generator_type: Optional[GeneratorType] = None,
-    show_if: Optional[FieldsConditionals] = None,
-    disable_if: Optional[FieldsConditionals] = None,
+    show_if: Optional[FieldConditionals] = None,
+    disable_if: Optional[FieldConditionals] = None,
     **kwargs,
 ):
     return BaseField(

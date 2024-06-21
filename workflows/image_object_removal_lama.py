@@ -10,6 +10,8 @@ from rossa import (
     ControlValue,
     ImageResponse,
     next_control,
+    ControlOption,
+    ControlContent,
 )
 
 
@@ -22,6 +24,15 @@ image = (
 
 with image.imports():
     from simple_lama_inpainting import SimpleLama
+
+
+class InpaintingImageControl(ControlOption):
+    title: str = "Inpainting"
+    description: str = "Defines areas to be modified in the generated image."
+    supported_contents: List[ControlContent] = [
+        ImageControlContent(is_required=False),
+        MaskControlContent(),
+    ]
 
 
 class Workflow(BaseWorkflow):

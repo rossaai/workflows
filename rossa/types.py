@@ -1,8 +1,6 @@
 from enum import Enum
-from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, root_validator
+from typing import Optional
 import random
-from pydantic.fields import FieldInfo
 
 from .constants import MAX_SAFE_DECIMAL, MAX_SAFE_INTEGER
 
@@ -108,52 +106,3 @@ class GeneratorType(str, Enum):
             return random.randint(
                 ge or 0.0, le or MAX_SAFE_DECIMAL
             )  # Adjust range as needed
-
-
-class ValueElement(BaseModel):
-    value: str
-    fields: Optional[Dict[str, Any]] = None
-    advanced_fields: Optional[Dict[str, Any]] = None
-
-    class Config:
-        arbitrary_types_allowed = True
-
-    def get_field(self, field_name: str, default: Any = None):
-        """Gets a field by name."""
-        if self.fields is None:
-            return default
-
-        return self.fields.get(field_name, default)
-
-    def get_advanced_field(self, field_name: str, default: Any = None):
-        """Gets an advanced field by name."""
-        if self.advanced_fields is None:
-            return default
-
-        return self.advanced_fields.get(field_name, default)
-
-
-class OptionValue(ValueElement):
-    pass
-
-
-class Option(BaseModel):
-    value: str
-    title: str
-    description: Optional[str] = None
-    fields: Optional[List[FieldInfo]] = None
-    advanced_fields: Optional[List[FieldInfo]] = None
-    group: Optional[str] = None
-
-    class Config:
-        arbitrary_types_allowed = True
-
-    @root_validator(pre=True)
-    def validate_every_advanced_field_has_alias(cls, values):
-        """Validates that every advanced field has an alias."""
-        if "advanced_fields" in values and values["advanced_fields"] is not None:
-            for field in values["advanced_fields"]:
-                if not hasattr(field, "alias") or field.alias is None:
-                    raise Exception(f"Advanced field {field} must have an alias.")
-
-        return values

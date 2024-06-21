@@ -1,15 +1,18 @@
 from typing import List, Union
 
+from .reserved_fields import ControlOption
+
+from .reserved_field_values import ControlValue
+
 from .types import ControlType
 
 from .exceptions import ControlNotFoundException
-from .controls import BaseControl, ControlValue
 
 
 def next_control(
-    controls: List[ControlValue], control: Union[BaseControl, ControlType, str]
+    controls: List[ControlValue], control: Union[ControlOption, ControlType, str]
 ) -> ControlValue:
-    control_type = control.value if isinstance(control, BaseControl) else control
+    control_type = control.value if isinstance(control, ControlOption) else control
 
     value = next(
         filter(
