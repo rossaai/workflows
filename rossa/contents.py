@@ -2,14 +2,14 @@ import base64
 import io
 import mimetypes
 import os
-from typing import Dict, Union, Optional
+from typing import Any, Dict, Union, Optional
 import requests
 from fastapi import Response as FastAPIResponse
 
 from .field_values import FieldValue
 from .reserved_field_values import ReservedFieldValue
 
-from pydantic import BaseModel
+from pydantic import BaseModel, create_model, validator
 from .types import ContentType
 from .image_conversion_utils import url_to_cv2_image, url_to_pil_image
 from .constants import (
@@ -23,14 +23,25 @@ import numpy as np
 class Content(BaseModel):
     type: ContentType
     content: Union[str, bytes, Image.Image, np.ndarray]
-    settings: Dict[str, Union[FieldValue, ReservedFieldValue]] = {}
+    settings: Dict[str, Any] = {}
+
+    @validator("settings", pre=True)
+    def validate_settings(cls, v: Dict[str, Any]) -> Dict[str, Any]:
+        SettingsModel = create_model(
+            "SettingsModel",
+            __root__=(
+                Dict[str, Union[FieldValue, ReservedFieldValue]],
+                ...,
+            ),
+        )
+
+        SettingsModel(__root__=v)
+        return v
 
     class Config:
         arbitrary_types_allowed = True
 
-    def get_setting(
-        self, key: str, default: Optional[Union[FieldValue, ReservedFieldValue]] = None
-    ) -> Union[FieldValue, ReservedFieldValue]:
+    def get_setting(self, key: str, default: Optional[Any] = None) -> Any:
         return self.settings.get(key, default)
 
     def to_response(self):
