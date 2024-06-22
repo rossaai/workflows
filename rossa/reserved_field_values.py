@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import create_model, validator
 
-from .constants import INFLUENCE_FIELD_ALIAS, INFLUENCE_FIELD_DEFAULT
+from .constants import INTENSITY_FIELD_ALIAS, INTENSITY_FIELD_DEFAULT
 
 from .field_values import FieldValue, OptionValue
 
@@ -28,7 +28,7 @@ class ControlValue(OptionValue):
 
     @property
     def influence(self) -> float:
-        return float(self.get_setting(INFLUENCE_FIELD_ALIAS, INFLUENCE_FIELD_DEFAULT))
+        return float(self.get_setting(INTENSITY_FIELD_ALIAS, INTENSITY_FIELD_DEFAULT))
 
     def get_setting(
         self,

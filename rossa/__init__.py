@@ -7,8 +7,8 @@ from .constants import (
     PROMPT_FIELD_ALIAS,
     NEGATIVE_PROMPT_FIELD_ALIAS,
     CONTROLS_FIELD_ALIAS,
-    INFLUENCE_FIELD_ALIAS,
-    INFLUENCE_FIELD_DEFAULT,
+    INTENSITY_FIELD_ALIAS,
+    INTENSITY_FIELD_DEFAULT,
 )
 
 
@@ -36,7 +36,7 @@ from .reserved_fields import (
     PromptField,
     NegativePromptField,
     ControlsField,
-    InfluenceField,
+    IntensityField,
     ControlContent,
     ImageControlContent,
     VideoControlContent,
@@ -87,8 +87,8 @@ __all__ = [
     "PROMPT_FIELD_ALIAS",
     "NEGATIVE_PROMPT_FIELD_ALIAS",
     "CONTROLS_FIELD_ALIAS",
-    "INFLUENCE_FIELD_ALIAS",
-    "INFLUENCE_FIELD_DEFAULT",
+    "INTENSITY_FIELD_ALIAS",
+    "INTENSITY_FIELD_DEFAULT",
     # Fields
     "FieldType",
     "BaseField",
@@ -112,7 +112,7 @@ __all__ = [
     "PromptField",
     "NegativePromptField",
     "ControlsField",
-    "InfluenceField",
+    "IntensityField",
     "ImageControlContent",
     "VideoControlContent",
     "AudioControlContent",

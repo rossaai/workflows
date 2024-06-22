@@ -2,8 +2,8 @@ from typing import List, Optional, Union
 from pydantic import BaseModel
 from .constants import (
     CONTROLS_FIELD_ALIAS,
-    INFLUENCE_FIELD_ALIAS,
-    INFLUENCE_FIELD_DEFAULT,
+    INTENSITY_FIELD_ALIAS,
+    INTENSITY_FIELD_DEFAULT,
     NEGATIVE_PROMPT_FIELD_ALIAS,
     PROMPT_FIELD_ALIAS,
 )
@@ -14,6 +14,7 @@ from .reserved_field_values import ControlValue
 
 
 class ControlContent(BaseModel):
+    title: str = "Content"
     type: ContentType
     required: bool = True
     fields: Optional[List[BaseFieldInfo]] = None
@@ -24,26 +25,32 @@ class ControlContent(BaseModel):
 
 
 class ImageControlContent(ControlContent):
+    title: str = "Image"
     type: ContentType = ContentType.IMAGE
 
 
 class VideoControlContent(ControlContent):
+    title: str = "Video"
     type: ContentType = ContentType.VIDEO
 
 
 class AudioControlContent(ControlContent):
+    title: str = "Audio"
     type: ContentType = ContentType.AUDIO
 
 
 class TextControlContent(ControlContent):
+    title: str = "Text"
     type: ContentType = ContentType.TEXT
 
 
 class ThreeDControlContent(ControlContent):
+    title: str = "3D"
     type: ContentType = ContentType.THREE_D
 
 
 class MaskControlContent(ControlContent):
+    title: str = "Mask"
     type: ContentType = ContentType.MASK
 
 
@@ -169,13 +176,14 @@ def ControlsField(
     )
 
 
-def InfluenceField(
-    alias=INFLUENCE_FIELD_ALIAS,
-    title="Influence",
-    description="El porcentaje de influencia que el control tiene sobre la generación.",
+def IntensityField(
+    alias=INTENSITY_FIELD_ALIAS,
+    title="Intensity",
+    description="The percentage of intensity this control has over the generation.",
     min=0.0,
     max=2.0,
-    default=INFLUENCE_FIELD_DEFAULT,
+    step=0.05,
+    default=INTENSITY_FIELD_DEFAULT,
     format_type=FormatType.PERCENTAGE,
     **kwargs,
 ):
@@ -187,5 +195,6 @@ def InfluenceField(
         max=max,
         default=default,
         format_type=format_type,
+        step=step,
         **kwargs,
     )

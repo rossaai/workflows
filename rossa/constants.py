@@ -1,6 +1,6 @@
 MAX_SAFE_INTEGER = 9007199254740991  # Ensure compatibility with JavaScript
 
-MAX_SAFE_DECIMAL = 9007199254740991.0  # Ensure compatibility with JavaScript
+MAX_SAFE_DECIMAL = MAX_SAFE_INTEGER * 1.0  # Ensure compatibility with JavaScript
 
 
 DEFAULT_IMAGE_FORMAT = "PNG"
@@ -11,9 +11,9 @@ PROMPT_FIELD_ALIAS = "prompt"
 
 NEGATIVE_PROMPT_FIELD_ALIAS = "negative_prompt"
 
-INFLUENCE_FIELD_ALIAS = "influence"
+INTENSITY_FIELD_ALIAS = "intensity"
 
-INFLUENCE_FIELD_DEFAULT = 1.0
+INTENSITY_FIELD_DEFAULT = 1.0
 
 CONTROLS_FIELD_ALIAS = "controls"
 
