@@ -1,6 +1,7 @@
 import json
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, Optional
 import inspect
+
 
 from .adapter import AbstractWorkflowAdapter
 from ..image import Image
@@ -14,8 +15,9 @@ class ModalWorkflowAdapter(AbstractWorkflowAdapter):
         workflow: WorkflowBlueprint,
         modal_app_name: str,
         modal_app_args: str = "",
-        custom_class_code: str = None,
-        dockerfile_path: str = None,
+        custom_class_code: Optional[str] = None,
+        include_class_code: bool = True,
+        dockerfile_path: Optional[str] = None,
         force_build: bool = False,
         return_code_and_dockerfile: bool = False,
     ) -> Union[str, Dict[str, Any]]:
@@ -61,6 +63,7 @@ class ModalWorkflowAdapter(AbstractWorkflowAdapter):
 
         # It uses the class name as the default app name instead of `workflow.schema()["title"]` due to Modal naming constraints.
         dockerfile_path = dockerfile_path or "Dockerfile"
+        dockerfile_content = ""
 
         if isinstance(workflow.image, Image):
             dockerfile_content = workflow.image.to_dockerfile()
@@ -72,11 +75,16 @@ class ModalWorkflowAdapter(AbstractWorkflowAdapter):
                 with open(dockerfile_path, "w") as f:
                     f.write(dockerfile_content)
 
-        if custom_class_code is None:
-            with open(inspect.getsourcefile(workflow.__class__), "r") as f:
-                class_code = f.read()
+        class_code = ""
+
+        if include_class_code:
+            if custom_class_code is None:
+                with open(inspect.getsourcefile(workflow.__class__), "r") as f:
+                    class_code = f.read()
+            else:
+                class_code = custom_class_code
         else:
-            class_code = custom_class_code
+            class_code = f"from {workflow.__class__.__module__} import {workflow.__class__.__name__}"
 
         is_same_download_method = inspect.getsource(
             workflow.download

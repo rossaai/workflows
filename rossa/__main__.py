@@ -1,114 +1,105 @@
 import argparse
-import importlib
+import importlib.util
 import inspect
 import os
 import subprocess
-import tempfile
+import io
+import sys
+from typing import Dict, Any, Optional, List, Type
 
 from .workflow import BaseWorkflow
 
-
-SUPPORTED_PROVIDERS = ["modal", "local"]
-
-SUPPORTED_COMMANDS = ["build", "run"]
-
-SUPPORTED_MODAL_GPUS = ["T4", "L4", "A100", "A10G", "H100"]
+SUPPORTED_PROVIDERS: List[str] = ["modal", "local"]
+SUPPORTED_COMMANDS: List[str] = ["build", "run"]
+SUPPORTED_MODAL_GPUS: List[str] = ["T4", "L4", "A100", "A10G", "H100"]
 
 
-def get_workflow_class(code: str):
+class InMemoryFile:
+    def __init__(self, content: str):
+        self.file: io.StringIO = io.StringIO(content)
+        self.name: str = "in_memory_file.py"
 
-    with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".py") as temp_file:
-        temp_file.write(code)
-        temp_file_path = temp_file.name
+    def __enter__(self) -> "InMemoryFile":
+        return self
 
-    # Save the original environment
-    prev_os_env = os.environ.copy()
-    os.environ.clear()
+    def __exit__(
+        self,
+        exc_type: Optional[type],
+        exc_val: Optional[Exception],
+        exc_tb: Optional[Any],
+    ) -> None:
+        self.file.close()
 
-    spec = importlib.util.spec_from_file_location("temp_module", temp_file_path)
-    temp_module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(temp_module)
+    def read(self) -> str:
+        return self.file.getvalue()
 
-    # Restore the original environment
-    os.environ.update(prev_os_env)
 
-    workflow_class = None
-    for name, obj in inspect.getmembers(temp_module):
-        if (
-            inspect.isclass(obj)
-            and issubclass(obj, BaseWorkflow)
-            and name != "BaseWorkflow"
-        ):
-            workflow_class = obj
-            break
+def get_workflow_class(filepath: str) -> Type[BaseWorkflow]:
+    # Get the absolute path
+    abs_path = os.path.abspath(filepath)
 
-    if workflow_class:
-        workflow_instance = workflow_class()  # type: BaseWorkflow
+    # Get the directory containing the file
+    dir_path = os.path.dirname(abs_path)
 
-        return workflow_instance
-    else:
-        raise Exception("No workflow class found in the provided code")
+    # Add the directory to sys.path temporarily
+    sys.path.insert(0, dir_path)
+
+    try:
+        # Generate a module name from the file path
+        module_name = os.path.splitext(os.path.basename(filepath))[0]
+
+        # Import the module
+        spec = importlib.util.spec_from_file_location(module_name, abs_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        # Find the workflow class
+        for name, obj in inspect.getmembers(module):
+            if (
+                inspect.isclass(obj)
+                and issubclass(obj, BaseWorkflow)
+                and obj != BaseWorkflow
+            ):
+                return obj
+
+        raise Exception("No workflow class found in the provided file")
+
+    finally:
+        # Remove the directory from sys.path
+        sys.path.pop(0)
 
 
 def create_modal_file(
-    code: str,
+    filepath: str,
     app_name: str,
-    gpu: str,
+    gpu: Optional[str],
     force_build: bool = False,
-):
-    workflow_instance = get_workflow_class(code)  # type: BaseWorkflow
+) -> InMemoryFile:
+    workflow_class = get_workflow_class(filepath)
+    workflow_instance: BaseWorkflow = workflow_class()
 
-    temp_dir = tempfile.mkdtemp()
-
-    dockerfile_path = os.path.join(temp_dir, "Dockerfile")
-    code_path = os.path.join(temp_dir, "deployment.py")
-
-    code = workflow_instance.to_modal(
+    modal_code: Dict[str, str] = workflow_instance.to_modal(
         modal_app_name=app_name,
         modal_app_args=f"gpu=modal.gpu.{gpu}()" if gpu else "",
-        custom_class_code=code,
-        dockerfile_path=dockerfile_path,
+        include_class_code=False,
+        dockerfile_path="Dockerfile",
         return_code_and_dockerfile=True,
         force_build=force_build,
     )
 
-    files = [
-        {"path": dockerfile_path, "content": code["dockerfile"]},
-        {"path": code_path, "content": code["code"], "primary": True},
-    ]
-
-    for file in files:
-        with open(file["path"], "w") as f:
-            f.write(file["content"])
-
-    primary_file = next(file for file in files if file.get("primary", False))
-
-    if primary_file is None:
-        raise Exception("Primary file not found")
-
-    primary_file_path = os.path.join(temp_dir, primary_file["path"])
-
-    return primary_file_path
+    return InMemoryFile(modal_code["code"])
 
 
-def create_local_file(code: str):
-    workflow_instance = get_workflow_class(code)  # type: BaseWorkflow
+def create_local_file(filepath: str) -> InMemoryFile:
+    workflow_class = get_workflow_class(filepath)
+    workflow_instance: BaseWorkflow = workflow_class()
 
-    temp_dir = tempfile.mkdtemp()
+    local_code: str = workflow_instance.to_local(include_class_code=False)
 
-    code = workflow_instance.to_local(
-        custom_class_code=code,
-    )
-
-    code_path = os.path.join(temp_dir, "local.py")
-
-    with open(code_path, "w") as f:
-        f.write(code)
-
-    return code_path
+    return InMemoryFile(local_code)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Description of your program")
     parser.add_argument(
         "provider", choices=SUPPORTED_PROVIDERS, help="The provider to use"
@@ -118,7 +109,6 @@ def main():
     )
     parser.add_argument("filepath", type=str, help="The path to the file")
 
-    # Optional arguments for 'modal run'
     parser.add_argument("--app-name", type=str, help="Use app name")
 
     parser.add_argument(
@@ -134,6 +124,7 @@ def main():
         help="Force the build of the docker image",
     )
 
+    args: argparse.Namespace
     args, _ = parser.parse_known_args()
 
     os.environ["PROVIDER"] = args.provider
@@ -144,7 +135,7 @@ def main():
             run_modal(args.filepath, args.app_name, args.gpu, args.force_build)
         elif args.command == "build":
             build_modal(args.filepath, args.app_name, args.gpu, args.force_build)
-    if args.provider == "local":
+    elif args.provider == "local":
         os.environ["IS_LOCAL"] = "true"
         if args.command == "run":
             run_local(args.filepath)
@@ -154,39 +145,37 @@ def main():
         parser.print_help()
 
 
-def run_local(filepath: str):
-    # Logic to execute the "run" command for local
-    with open(filepath, "r") as f:
-        code = f.read()
+def run_local(filepath: str) -> None:
+    local_file: InMemoryFile = create_local_file(filepath)
 
-    local_file = create_local_file(code)
+    cwd = os.path.dirname(os.path.abspath(filepath))
 
-    print(f"Running local with file: {local_file}")
-
-    subprocess.run(f"python {local_file}", shell=True, env=os.environ)
+    with local_file as f:
+        subprocess.run(["python", "-c", f.read()], env=os.environ, cwd=cwd)
 
 
-def run_modal(filepath: str, app_name: str, gpu: str, force_build: bool):
-    # Logic to execute the "run" command for modal
-    with open(filepath, "r") as f:
-        code = f.read()
+def run_modal(
+    filepath: str, app_name: Optional[str], gpu: Optional[str], force_build: bool
+) -> None:
+    modal_file: InMemoryFile = create_modal_file(filepath, app_name, gpu, force_build)
 
-    modal_file = create_modal_file(code, app_name, gpu, force_build)
+    print(f"Running modal with in-memory file")
 
-    print(f"Running modal with file: {modal_file}")
+    with modal_file as f:
+        subprocess.run(["modal", "run", "-"], input=f.read(), text=True, env=os.environ)
 
-    subprocess.run(f"modal run {modal_file}", shell=True, env=os.environ)
 
+def build_modal(
+    filepath: str, app_name: Optional[str], gpu: Optional[str], force_build: bool
+) -> None:
+    modal_file: InMemoryFile = create_modal_file(filepath, app_name, gpu, force_build)
 
-def build_modal(filepath: str, app_name: str, gpu: str, force_build: bool):
-    with open(filepath, "r") as f:
-        code = f.read()
+    print(f"Building modal with in-memory file")
 
-    modal_file = create_modal_file(code, app_name, gpu, force_build)
-
-    print(f"Building modal with file: {modal_file}")
-
-    subprocess.run(f"modal build {modal_file}", shell=True, env=os.environ)
+    with modal_file as f:
+        subprocess.run(
+            ["modal", "build", "-"], input=f.read(), text=True, env=os.environ
+        )
 
 
 if __name__ == "__main__":

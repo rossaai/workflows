@@ -24,6 +24,7 @@ class BaseWorkflow(WorkflowBlueprint):
         modal_app_name: str = None,
         modal_app_args: str = "",
         custom_class_code: str = None,
+        include_class_code: bool = True,
         dockerfile_path: str = None,
         force_build: bool = False,
         return_code_and_dockerfile: bool = False,
@@ -39,6 +40,7 @@ class BaseWorkflow(WorkflowBlueprint):
             modal_app_name (str): The name of the Modal app for the workflow.
             modal_app_args (str, optional): Additional arguments to pass to the Modal app.
             custom_class_code (str, optional): Custom class code to include in the generated script.
+            include_class_code (bool, optional): Whether to include the custom class code in the generated script.
             dockerfile_path (str, optional): Path to save the generated Dockerfile. If not provided, a temporary file will be used.
             return_code_and_dockerfile (bool, optional): Whether to return the generated code and Dockerfile content as a dictionary.
 
@@ -80,6 +82,7 @@ class BaseWorkflow(WorkflowBlueprint):
             modal_app_name,
             modal_app_args,
             custom_class_code,
+            include_class_code,
             dockerfile_path,
             force_build,
             return_code_and_dockerfile,
@@ -88,7 +91,12 @@ class BaseWorkflow(WorkflowBlueprint):
     def to_local(
         self,
         custom_class_code: str = None,
+        include_class_code: bool = True,
     ) -> str:
         adapter = LocalWorkflowAdapter()
 
-        return adapter.convert_workflow(self, custom_class_code=custom_class_code)
+        return adapter.convert_workflow(
+            self,
+            custom_class_code=custom_class_code,
+            include_class_code=include_class_code,
+        )

@@ -11,12 +11,18 @@ class LocalWorkflowAdapter(AbstractWorkflowAdapter):
         self,
         workflow: WorkflowBlueprint,
         custom_class_code: Optional[str] = None,
-    ):
-        if custom_class_code is None:
-            with open(inspect.getsourcefile(workflow.__class__), "r") as f:
-                class_code = f.read()
+        include_class_code: bool = True,
+    ) -> str:
+        class_code = ""
+
+        if include_class_code:
+            if custom_class_code is None:
+                with open(inspect.getsourcefile(workflow.__class__), "r") as f:
+                    class_code = f.read()
+            else:
+                class_code = custom_class_code
         else:
-            class_code = custom_class_code
+            class_code = f"from {workflow.__class__.__module__} import {workflow.__class__.__name__}"
 
         imports = f"""
 import inspect
