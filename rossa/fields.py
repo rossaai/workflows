@@ -287,7 +287,7 @@ def PercentageSliderField(
     placeholder: str = "",
     min: float = 0,
     max: float = 1.0,
-    step: float = 0.01,
+    step: float = 0.05,
     default: Optional[float] = None,
     default_generator_type: Optional[GeneratorType] = None,
     show_if: Optional[FieldConditionals] = None,
