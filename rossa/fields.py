@@ -23,6 +23,7 @@ class Option(BaseModel):
     description: Optional[str] = None
     fields: Optional[List[FieldInfo]] = None
     advanced_fields: Optional[List[FieldInfo]] = None
+    max: Optional[int] = None
 
     class Config:
         arbitrary_types_allowed = True
